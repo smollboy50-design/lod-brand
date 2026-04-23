@@ -5,78 +5,538 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>L O D — 동대문 새벽시장 전문 사입 서비스</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet"/>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    html,body{ background:#0a0a0a; color:#f0ece4; font-family:'Noto Sans KR',sans-serif; overflow-x:hidden; min-height:100%; }
-    #root{ display:flex; justify-content:center; min-height:100vh; background:#0a0a0a; }
-    .shell{ width:100%; max-width:600px; min-height:100vh; background:#0a0a0a; position:relative; box-shadow:1px 0 0 rgba(240,236,228,0.07),-1px 0 0 rgba(240,236,228,0.07); }
-    @keyframes pulse {0%,100%{box-shadow:0 0 0 0 rgba(254,229,0,.55)}60%{box-shadow:0 0 0 18px rgba(254,229,0,0)}}
-    .nav{ position:sticky;top:0;z-index:200; width:100%; display:flex;align-items:center;justify-content:space-between; padding:0 20px; height:68px; background:rgba(10,10,10,0.96); backdrop-filter:blur(18px); border-bottom:1px solid rgba(240,236,228,0.08); border-radius:0 0 20px 20px; }
-    .nav-logo{background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;gap:10px;color:#f0ece4;}
-    .nav-cta{ background:#f0ece4;color:#0a0a0a; padding:11px 22px;font-size:14px;font-weight:900; text-decoration:none;border-radius:50px; white-space:nowrap; }
-    .vbox-wrap{ display:flex; justify-content:center; width:100%; margin-top:10px; }
-    .vbox{ width:400px; max-width:90%; aspect-ratio:9/16; background:#111; border-radius:22px; overflow:hidden; border:1px solid rgba(240,236,228,.1); position:relative; }
+    html,body{
+      background:#0a0a0a;
+      color:#f0ece4;
+      font-family:'Noto Sans KR',sans-serif;
+      overflow-x:hidden;
+      min-height:100%;
+    }
+
+    /* ── 600px 에이블리 컨테이너 ── */
+    #root{
+      display:flex;
+      justify-content:center;
+      min-height:100vh;
+      background:#0a0a0a;
+    }
+    .shell{
+      width:100%;
+      max-width:600px;
+      min-height:100vh;
+      background:#0a0a0a;
+      position:relative;
+      box-shadow:1px 0 0 rgba(240,236,228,0.07),-1px 0 0 rgba(240,236,228,0.07);
+    }
+
+    /* 스크롤바 */
+    ::-webkit-scrollbar{width:3px;}
+    ::-webkit-scrollbar-thumb{background:rgba(240,236,228,.18);border-radius:2px;}
+
+    /* 애니메이션 */
+    @keyframes fadeIn  {from{opacity:0}to{opacity:1}}
+    @keyframes slideUp {from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes pulse   {0%,100%{box-shadow:0 0 0 0 rgba(254,229,0,.55)}60%{box-shadow:0 0 0 18px rgba(254,229,0,0)}}
+    @keyframes dotB    {0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+    .fade-in{animation:fadeIn .35s ease;}
+
+    /* ── NAV — 컨테이너 안 sticky ── */
+    .nav{
+      position:sticky;top:0;z-index:200;
+      width:100%;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 20px;
+      height:68px;
+      background:rgba(10,10,10,0.96);
+      backdrop-filter:blur(18px);
+      border-bottom:1px solid rgba(240,236,228,0.08);
+      border-radius:0 0 20px 20px;
+    }
+    .nav-logo{background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;gap:10px;}
+    .nav-logo-text{font-size:14px;font-weight:300;color:rgba(240,236,228,.62);letter-spacing:.24em;text-transform:uppercase;}
+    .nav-cta{
+      background:#f0ece4;color:#0a0a0a;
+      padding:11px 22px;font-size:14px;font-weight:900;
+      text-decoration:none;border-radius:50px;
+      white-space:nowrap;letter-spacing:.04em;
+      flex-shrink:0;transition:opacity .2s;
+    }
+    .nav-cta:hover{opacity:.82;}
+
+    /* ── 9:16 VIDEO BOX — 480px 고정 중앙 ── */
+    .vbox-wrap{
+      display:flex;
+      justify-content:center;
+      width:100%;
+    }
+    .vbox{
+      width:480px;
+      max-width:100%;
+      /* 9:16 비율: 480 × 16/9 = 853px */
+      aspect-ratio:9/16;
+      background:#111;
+      border-radius:22px;
+      overflow:hidden;
+      border:1px solid rgba(240,236,228,.1);
+      position:relative;
+      flex-shrink:0;
+    }
+    .vbox video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
     .vbox-ph{position:absolute;inset:0;background:linear-gradient(160deg,#1d1d1d,#0d0d0d);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;}
     .vbox-circle{width:80px;height:80px;border-radius:50%;border:1px solid rgba(240,236,228,.18);display:flex;align-items:center;justify-content:center;}
     .vbox-tri{width:0;height:0;border-top:12px solid transparent;border-bottom:12px solid transparent;border-left:20px solid rgba(240,236,228,.38);margin-left:5px;}
-    .rbtn{display:flex;align-items:center;justify-content:space-between;width:100%;border:none;border-radius:20px;cursor:pointer;font-family:inherit; transition:transform 0.2s;}
-    .lcard{ position:relative; width:100%; aspect-ratio:9/16; background:#111; border:1px solid rgba(240,236,228,.1); border-radius:18px; overflow:hidden; }
-    .lcard-inner{position:absolute;inset:0;background:#141414;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
+    .vbox-label{font-size:11px;letter-spacing:.36em;color:rgba(240,236,228,.2);text-transform:uppercase;}
+
+    /* ── 9:16 LOOK CARD ── */
+    .lcard{
+      position:relative;
+      padding-top:177.78%; /* 9:16 */
+      background:#111;
+      border:1px solid rgba(240,236,228,.1);
+      border-radius:18px;
+      overflow:hidden;
+      cursor:pointer;
+      transition:border-color .3s;
+    }
+    .lcard:hover{border-color:rgba(240,236,228,.3);}
+    .lcard-inner{position:absolute;inset:0;background:#141414;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:background .3s;}
+    .lcard:hover .lcard-inner{background:#1c1c1c;}
+    .lcard-plus{width:42px;height:42px;border:1px solid rgba(240,236,228,.12);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;color:rgba(240,236,228,.18);}
+    .lcard-num{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(240,236,228,.2);}
+    .lcard-info{position:absolute;bottom:0;left:0;right:0;padding:12px;opacity:0;transition:opacity .3s;pointer-events:none;background:linear-gradient(to top,rgba(0,0,0,.72) 0%,transparent 55%);}
+    .lcard:hover .lcard-info{opacity:1;}
+    .lcard-style{font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:rgba(240,236,228,.9);}
+    .lcard-badge{position:absolute;top:10px;left:10px;font-size:9px;letter-spacing:.2em;color:rgba(240,236,228,.22);}
+
+    /* ── CHAT PULSE ── */
+    .chat-pulse{animation:pulse 2.2s ease-in-out infinite;}
+    .chat-pulse:hover{animation-play-state:paused;transform:scale(1.02);}
+    .float-pulse{animation:pulse 2s ease-in-out infinite;}
+
+    /* 스텝 가로 스크롤 */
+    .steps-row{display:flex;align-items:center;overflow-x:auto;padding-bottom:2px;}
+    .steps-row::-webkit-scrollbar{display:none;}
+
+    /* 지역 버튼 */
+    .rbtn{display:flex;align-items:center;justify-content:space-between;width:100%;border:none;border-radius:20px;cursor:pointer;font-family:inherit;transition:transform .2s,filter .2s;}
+    .rbtn:hover{transform:scale(1.01);filter:brightness(1.06);}
+
+    textarea::placeholder{color:rgba(240,236,228,.3);}
+    textarea{outline:none;}
   </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect } = React;
+const {useState,useEffect,useRef} = React;
 
-const Main = ({ onChat }) => {
-  const [clock, setClock] = useState("");
-  
-  useEffect(() => {
-    const updateTime = () => {
-      setClock(new Date().toLocaleTimeString("ko-KR", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" }));
-    };
-    updateTime();
-    const id = setInterval(updateTime, 1000);
-    return () => clearInterval(id);
-  }, []);
+/* ── DATA ──────────────────────────────────────────────────── */
+const AGENTS=[
+  {id:"SN",regionLabel:"강북·도봉·노원·중랑",regionEn:"SEOUL NORTH AREA",career:"18년 베테랑",
+   kakaoUrl:"https://open.kakao.com/SEOUL_NORTH",videoUrl:"",
+   intro:["L O D 서울 강북권 대표 베테랑 팀입니다.","18년의 숙련된 노하우로 단순 사입 이상의 가치를 제공합니다.","트렌드와 마켓 정보를 함께 공유해 드립니다."],
+   rules:[{title:"사입 신청 마감",desc:"매일 AM 03:00"}]},
+  {id:"IB",regionLabel:"인천·부천",regionEn:"INCHEON · BUCHEON",career:"20년 베테랑",
+   kakaoUrl:"https://open.kakao.com/INCHEON_BUCHEON",videoUrl:"",
+   intro:["인천·부천 지역 사입의 최고 전문가 팀입니다.","20년 경력의 완벽한 픽업과 빠른 피드백을 약속드립니다.","경기권 로드샵 사장님들의 든든한 파트너가 되겠습니다."],
+   rules:[{title:"사입 신청 마감",desc:"매일 AM 02:30"}]},
+];
+const STEPS=["사입 신청","현장 픽업","지역별 분류","안전 배송"];
+const LOOKS=[
+  {id:1,label:"EDITORIAL 01",style:"MINIMAL CHIC"},
+  {id:2,label:"EDITORIAL 02",style:"OVERFIT STREET"},
+  {id:3,label:"EDITORIAL 03",style:"MODERN CLASSIC"},
+  {id:4,label:"EDITORIAL 04",style:"URBAN CASUAL"},
+];
+const MAIN_KAKAO="https://open.kakao.com/LOD_MAIN";
+const SYS=`당신은 동대문 새벽시장 전문 사입 서비스 'L O D'의 24시간 AI 비서입니다. 사입 서비스, 동대문 시장, 패션 트렌드에 대해 친절하고 전문적으로 답변하세요. 담당 지역: 서울 강북권(18년 경력), 인천·부천(20년 경력). 사입 마감: 매일 AM 03:00. 2-4문장으로 한국어로만 답변하세요.`;
 
-  return (
-    <div style={{animation: "fadeIn 0.5s ease"}}>
+/* ── HOOKS ─────────────────────────────────────────────────── */
+function useClock(){
+  const [t,setT]=useState(new Date());
+  useEffect(()=>{const id=setInterval(()=>setT(new Date()),1000);return()=>clearInterval(id);},[]);
+  return t.toLocaleTimeString("ko-KR",{hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit"});
+}
+
+/* ── LD LOGO ────────────────────────────────────────────────── */
+function LDLogo({size=54,a=1}){
+  return(
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" style={{opacity:a,flexShrink:0}}>
+      <circle cx="50" cy="50" r="46" stroke="#f0ece4" strokeWidth="5" fill="none"/>
+      <text x="14" y="72" fontFamily="Georgia,serif" fontWeight="900" fontSize="62" fill="#f0ece4" letterSpacing="-2">LD</text>
+    </svg>
+  );
+}
+
+/* ── VIDEO BOX ─────────────────────────────────────────────── */
+function VBox({url,label}){
+  return(
+    <div className="vbox-wrap">
+      <div className="vbox">
+        {url
+          ?<video src={url} autoPlay muted loop playsInline/>
+          :<div className="vbox-ph">
+             <div className="vbox-circle"><div className="vbox-tri"/></div>
+             <span className="vbox-label">{label||"VIDEO PLAY"}</span>
+           </div>
+        }
+      </div>
+    </div>
+  );
+}
+
+/* ── LOOK MODAL ─────────────────────────────────────────────── */
+function Modal({look,idx,total,onClose,onPrev,onNext}){
+  useEffect(()=>{
+    const fn=e=>{if(e.key==="Escape")onClose();if(e.key==="ArrowLeft")onPrev();if(e.key==="ArrowRight")onNext();};
+    window.addEventListener("keydown",fn);return()=>window.removeEventListener("keydown",fn);
+  },[]);
+  return(
+    <div onClick={onClose} style={{position:"fixed",inset:0,zIndex:800,background:"rgba(4,4,4,.97)",backdropFilter:"blur(16px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,animation:"fadeIn .2s ease"}}>
+      <button onClick={onClose} style={{position:"fixed",top:16,right:16,width:42,height:42,borderRadius:"50%",border:"1px solid rgba(240,236,228,.25)",background:"transparent",color:"rgba(240,236,228,.6)",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",zIndex:810}}>×</button>
+      {idx>0&&<button onClick={e=>{e.stopPropagation();onPrev();}} style={{position:"fixed",left:10,top:"50%",transform:"translateY(-50%)",width:40,height:40,borderRadius:"50%",border:"1px solid rgba(240,236,228,.2)",background:"transparent",color:"rgba(240,236,228,.55)",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",zIndex:810}}>‹</button>}
+      {idx<total-1&&<button onClick={e=>{e.stopPropagation();onNext();}} style={{position:"fixed",right:10,top:"50%",transform:"translateY(-50%)",width:40,height:40,borderRadius:"50%",border:"1px solid rgba(240,236,228,.2)",background:"transparent",color:"rgba(240,236,228,.55)",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",zIndex:810}}>›</button>}
+      <div onClick={e=>e.stopPropagation()} style={{width:"min(280px,70vw)",display:"flex",flexDirection:"column",gap:12,animation:"slideUp .25s ease"}}>
+        <div style={{paddingTop:"177.78%",position:"relative",borderRadius:22,border:"1px solid rgba(240,236,228,.12)",overflow:"hidden",background:"#181818"}}>
+          <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8}}>
+            <div style={{fontSize:22,fontWeight:900,letterSpacing:".1em",color:"rgba(240,236,228,.15)"}}>{look.label}</div>
+            <div style={{fontSize:9,letterSpacing:".24em",color:"rgba(240,236,228,.1)"}}>AI MODEL · L O D</div>
+          </div>
+        </div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",padding:"0 2px"}}>
+          <div>
+            <div style={{fontSize:12,fontWeight:900,letterSpacing:".18em",textTransform:"uppercase",color:"rgba(240,236,228,.75)"}}>{look.style}</div>
+            <div style={{fontSize:9,letterSpacing:".12em",color:"rgba(240,236,228,.3)",marginTop:2}}>{look.label}</div>
+          </div>
+          <div style={{fontSize:10,color:"rgba(240,236,228,.22)"}}>{idx+1}/{total}</div>
+        </div>
+        <div style={{display:"flex",justifyContent:"center",gap:5}}>
+          {LOOKS.map((_,i)=><div key={i} style={{height:5,borderRadius:3,cursor:"pointer",transition:"all .25s",width:i===idx?"18px":"5px",background:i===idx?"rgba(240,236,228,.65)":"rgba(240,236,228,.18)"}}/>)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── AI CHAT ─────────────────────────────────────────────────── */
+function Chat({open,onClose}){
+  const [msgs,setMsgs]=useState([{role:"assistant",content:"안녕하세요! L O D AI 비서입니다 😊\n사입에 대해 궁금한 것을 무엇이든 물어보세요!"}]);
+  const [input,setInput]=useState("");
+  const [loading,setLoading]=useState(false);
+  const botRef=useRef(null);
+  const inpRef=useRef(null);
+
+  useEffect(()=>{
+    if(open){setTimeout(()=>botRef.current?.scrollIntoView({behavior:"smooth"}),100);setTimeout(()=>inpRef.current?.focus(),320);}
+  },[open,msgs.length]);
+
+  const send=async()=>{
+    const t=input.trim();if(!t||loading)return;
+    const nm=[...msgs,{role:"user",content:t}];
+    setMsgs(nm);setInput("");setLoading(true);
+    try{
+      const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYS,messages:nm.map(m=>({role:m.role,content:m.content}))})});
+      const d=await r.json();
+      setMsgs(p=>[...p,{role:"assistant",content:d.content?.[0]?.text||"죄송합니다, 잠시 후 다시 시도해 주세요."}]);
+    }catch{setMsgs(p=>[...p,{role:"assistant",content:"연결에 문제가 생겼어요. 잠시 후 다시 시도해 주세요."}]);}
+    setLoading(false);
+  };
+  const onKey=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}};
+
+  return(
+    <>
+      <div onClick={onClose} style={{position:"fixed",inset:0,zIndex:899,background:"rgba(0,0,0,.6)",backdropFilter:"blur(4px)",opacity:open?1:0,pointerEvents:open?"auto":"none",transition:"opacity .35s"}}/>
+      <div style={{
+        position:"fixed",bottom:0,left:"50%",
+        transform:`translateX(-50%) translateY(${open?"0":"100%"})`,
+        width:"100%",maxWidth:600,
+        zIndex:900,height:"80vh",
+        background:"#111",borderRadius:"24px 24px 0 0",
+        border:"1px solid rgba(240,236,228,.15)",
+        display:"flex",flexDirection:"column",
+        boxShadow:"0 -8px 48px rgba(0,0,0,.7)",
+        transition:"transform .4s cubic-bezier(.32,.72,0,1)",
+      }}>
+        <div style={{position:"absolute",top:8,left:"50%",transform:"translateX(-50%)",width:36,height:4,borderRadius:2,background:"rgba(240,236,228,.22)"}}/>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"20px 20px 14px",borderBottom:"1px solid rgba(240,236,228,.1)",flexShrink:0}}>
+          <div>
+            <div style={{fontSize:15,fontWeight:700,color:"#f0ece4",letterSpacing:".06em"}}>L O D AI 비서</div>
+            <div style={{fontSize:10,color:"#FEE500",marginTop:2}}>● 24시간 응대</div>
+          </div>
+          <button onClick={onClose} style={{width:30,height:30,borderRadius:"50%",background:"rgba(240,236,228,.08)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,color:"rgba(240,236,228,.6)"}}>×</button>
+        </div>
+        <div style={{flex:1,overflowY:"auto",padding:"14px 16px",display:"flex",flexDirection:"column",gap:10}}>
+          {msgs.map((m,i)=>(
+            <div key={i} style={{maxWidth:"83%",padding:"11px 15px",fontSize:14,lineHeight:1.65,whiteSpace:"pre-wrap",wordBreak:"keep-all",
+              borderRadius:m.role==="user"?"20px 20px 6px 20px":"20px 20px 20px 6px",
+              background:m.role==="user"?"#FEE500":"rgba(240,236,228,.08)",
+              color:m.role==="user"?"#0a0a0a":"#f0ece4",
+              fontWeight:m.role==="user"?600:400,
+              alignSelf:m.role==="user"?"flex-end":"flex-start"}}>
+              {m.content}
+            </div>
+          ))}
+          {loading&&<div style={{alignSelf:"flex-start",padding:"11px 16px",borderRadius:"20px 20px 20px 6px",background:"rgba(240,236,228,.08)",display:"flex",gap:5,alignItems:"center"}}>
+            {[0,1,2].map(i=><div key={i} style={{width:7,height:7,borderRadius:"50%",background:"rgba(240,236,228,.42)",animation:`dotB 1.2s ease-in-out ${i*.2}s infinite`}}/>)}
+          </div>}
+          <div ref={botRef}/>
+        </div>
+        <div style={{padding:"10px 14px 18px",borderTop:"1px solid rgba(240,236,228,.1)",display:"flex",gap:8,alignItems:"flex-end",flexShrink:0}}>
+          <textarea ref={inpRef} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={onKey}
+            placeholder="사입에 대해 무엇이든 물어보세요..." rows={1}
+            style={{flex:1,background:"rgba(240,236,228,.07)",border:"1px solid rgba(240,236,228,.15)",borderRadius:18,padding:"11px 15px",fontSize:14,color:"#f0ece4",resize:"none",fontFamily:"inherit",lineHeight:1.5,maxHeight:90,overflowY:"auto"}}/>
+          <button onClick={send} disabled={loading||!input.trim()}
+            style={{width:42,height:42,borderRadius:"50%",background:input.trim()&&!loading?"#FEE500":"rgba(240,236,228,.1)",border:"none",cursor:input.trim()&&!loading?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background .2s"}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M22 2L11 13" stroke={input.trim()&&!loading?"#0a0a0a":"rgba(240,236,228,.28)"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke={input.trim()&&!loading?"#0a0a0a":"rgba(240,236,228,.28)"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ── MAIN PAGE ──────────────────────────────────────────────── */
+function Main({onAgent,onChat}){
+  const clock=useClock();
+  const [modal,setModal]=useState(null);
+  const [mIdx,setMIdx]=useState(0);
+  const openM=l=>{setModal(l);setMIdx(LOOKS.findIndex(x=>x.id===l.id));};
+  const prev=()=>{if(mIdx>0){const i=mIdx-1;setMIdx(i);setModal(LOOKS[i]);}};
+  const next=()=>{if(mIdx<LOOKS.length-1){const i=mIdx+1;setMIdx(i);setModal(LOOKS[i]);}};
+
+  return(
+    <div>
+      {/* ── [1순위] 타이틀 ── */}
       <div style={{padding:"24px 20px 16px",textAlign:"center"}}>
-        <div style={{fontSize:"clamp(28px,7.5vw,44px)",fontWeight:900,letterSpacing:".1em",lineHeight:1.28}}>동대문 새벽시장<br/>전문 사입 서비스</div>
+        <div style={{fontSize:"clamp(28px,7.5vw,44px)",fontWeight:900,letterSpacing:".1em",lineHeight:1.28,wordBreak:"keep-all"}}>
+          동대문 새벽시장<br/>전문 사입 서비스
+        </div>
       </div>
-      
-      <div className="vbox-wrap"><div className="vbox"><div className="vbox-ph"><div className="vbox-circle"><div className="vbox-tri"/></div><span style={{fontSize:11, letterSpacing:".36em", color:"rgba(240,236,228,.2)"}}>L O D FILM</span></div></div></div>
 
+      {/* ── [2순위] 9:16 메인 영상 ── */}
+      <div style={{padding:"0 20px"}}>
+        <VBox label="L O D FILM"/>
+      </div>
+
+      {/* ── [3순위] AI 챗 배너 — 흰색, 중앙 60% ── */}
       <div style={{padding:"20px 20px 0",display:"flex",justifyContent:"center"}}>
-        <button onClick={onChat} style={{width:"62%",padding:"16px",background:"#fff",borderRadius:22,fontWeight:900, border:"none", cursor:"pointer", animation:"pulse 2.2s infinite"}}>💬 사입에 대해 무엇이든 물어보세요<br/><span style={{fontSize:11}}>24시 AI 챗!!</span></button>
+        <button onClick={onChat} className="chat-pulse"
+          style={{width:"62%",padding:"16px 14px",background:"#fff",color:"#0a0a0a",border:"none",borderRadius:22,cursor:"pointer",textAlign:"center",fontFamily:"inherit",fontWeight:900,fontSize:"clamp(13px,3.5vw,17px)",lineHeight:1.5,letterSpacing:".03em",transition:"transform .2s"}}>
+          💬 사입에 대해 무엇이든 물어보세요<br/>
+          <span style={{display:"block",textAlign:"center",marginTop:3,fontSize:".9em"}}>24시 AI 챗!!</span>
+        </button>
       </div>
 
-      <div style={{margin:"20px 20px 0",borderTop:"2px solid rgba(240,236,228,.18)",borderBottom:"2px solid rgba(240,236,228,.18)",padding:"22px 0",textAlign:"center"}}>
-        <div style={{fontSize:12,color:"rgba(240,236,228,.38)", letterSpacing:".32em", marginBottom:8}}>CURRENT MARKET TIME</div>
-        <div style={{fontSize:48,fontWeight:800, marginBottom:18}}>{clock}</div>
-        <div style={{background:"rgba(240,236,228,.04)",padding:"16px",borderRadius:20, width:"90%", margin:"0 auto"}}>
-          <div style={{fontSize:13,fontWeight:800,color:"rgba(240,236,228,.42)",marginBottom:12}}>사입 진행 방식</div>
-          <div style={{display:"flex", justifyContent:"center", gap:8, fontSize:15, fontWeight:900}}>
-            {["사입 신청","현장 픽업","지역별 분류","안전 배송"].map((s,i)=><div key={i}>{s}{i<3 && <span style={{color:"rgba(240,236,228,.2)", marginLeft:8}}>▶</span>}</div>)}
+      {/* ── 시계 + 사입 진행 방식 ── */}
+      <div style={{margin:"20px 20px 0",borderTop:"2px solid rgba(240,236,228,.18)",borderBottom:"2px solid rgba(240,236,228,.18)",padding:"22px 0"}}>
+        <div style={{textAlign:"center",marginBottom:18}}>
+          <div style={{fontSize:12,letterSpacing:".32em",color:"rgba(240,236,228,.38)",textTransform:"uppercase",marginBottom:8,fontWeight:700}}>CURRENT MARKET TIME</div>
+          <div style={{fontFamily:"monospace",fontSize:"clamp(34px,9.5vw,56px)",fontWeight:800,letterSpacing:".04em",lineHeight:1,textAlign:"center"}}>{clock}</div>
+        </div>
+        <div style={{background:"rgba(240,236,228,.04)",padding:"16px 18px",borderRadius:20,textAlign:"center"}}>
+          <div style={{fontSize:13,fontWeight:800,color:"rgba(240,236,228,.42)",letterSpacing:".18em",textTransform:"uppercase",marginBottom:12,textAlign:"center"}}>사입 진행 방식</div>
+          <div className="steps-row" style={{justifyContent:"center"}}>
+            {STEPS.map((s,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",flexShrink:0}}>
+                <span style={{fontSize:"clamp(15px,4.2vw,22px)",fontWeight:900,whiteSpace:"nowrap"}}>{s}</span>
+                {i<STEPS.length-1&&<span style={{margin:"0 8px",fontSize:13,color:"rgba(240,236,228,.32)",flexShrink:0}}>▶</span>}
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      <div style={{margin:"20px 20px 0", borderLeft:"7px solid #f0ece4", padding:"16px 20px", background:"rgba(240,236,228,.03)", borderRadius:"0 20px 20px 0", textAlign:"center"}}>
-        <p style={{fontSize:18, fontWeight:900, lineHeight:1.6}}>지역 담당 삼촌들의 평균 경력은<br/>10~15년 이상의 베테랑들입니다.</p>
-        <p style={{fontSize:18, fontWeight:900, marginTop:5}}>트렌드와 마켓 정보를 함께 공유해 드립니다.</p>
+      {/* ── PR 문구 ── */}
+      <div style={{margin:"20px 20px 0",borderLeft:"7px solid #f0ece4",padding:"16px 24px",borderRadius:"0 20px 20px 0",background:"rgba(240,236,228,.03)",textAlign:"center"}}>
+        <p style={{fontSize:"clamp(15px,4.2vw,22px)",lineHeight:1.65,fontWeight:900,wordBreak:"keep-all",marginBottom:6}}>
+          지역 담당 삼촌들의 평균 경력은<br/>10~15년 이상의 베테랑들입니다.
+        </p>
+        <p style={{fontSize:"clamp(15px,4.2vw,22px)",lineHeight:1.65,fontWeight:900,wordBreak:"keep-all"}}>
+          트렌드와 마켓 정보를 함께 공유해 드립니다.
+        </p>
       </div>
 
-      <div style={{padding:"20px", display:"flex", flexDirection:"column", gap:12}}>
-        <button className="rbtn" style={{padding:"28px 32px",background:"#FEE500",fontWeight:900,fontSize:24, color:"#0a0a0a"}}>강북·도봉·노원·중랑 <span style={{fontSize:28}}>→</span></button>
-        <button className="rbtn" style={{padding:"28px 32px",background:"#FEE500",fontWeight:900,fontSize:24, color:"#0a0a0a"}}>인천·부천 <span style={{fontSize:28}}>→</span></button>
+      {/* ── 지역 카드 — 노란색, 지역명만, 중앙 정렬 ── */}
+      <div style={{padding:"20px 20px 0",display:"flex",flexDirection:"column",gap:12}}>
+        {AGENTS.map(ag=>(
+          <button key={ag.id} onClick={()=>onAgent(ag)} className="rbtn"
+            style={{padding:"28px 32px",background:"#FEE500",textAlign:"center"}}>
+            <div style={{fontSize:"clamp(20px,5.8vw,30px)",fontWeight:900,color:"#0a0a0a",lineHeight:1.2,flex:1,textAlign:"center"}}>
+              {ag.regionLabel}
+            </div>
+            <span style={{fontSize:"clamp(22px,6vw,32px)",fontWeight:900,color:"#0a0a0a",flexShrink:0}}>→</span>
+          </button>
+        ))}
       </div>
 
+      {/* ── AI 모델 룩북 ── */}
       <div style={{padding:"52px 20px 0",textAlign:"center"}}>
-        <div style={{fontSize:44,letterSpacing:".3em",color:"rgba(240,236,228,.06)",fontWeight:900}}>AI EDITORIAL</div>
-        <h2 style={{
+        <div style={{fontSize:"clamp(44px,11.5vw,80px)",letterSpacing:".3em",color:"rgba(240,236,228,.06)",fontWeight:900,lineHeight:1,marginBottom:-10}}>AI EDITORIAL</div>
+        <h2 style={{fontSize:"clamp(20px,5.5vw,30px)",fontWeight:900,position:"relative",zIndex:1,textAlign:"center"}}>인플루언서 패션 AI 모델 제작</h2>
+        <div style={{fontSize:"clamp(13px,3.8vw,18px)",color:"rgba(240,236,228,.5)",letterSpacing:".14em",marginTop:8,fontWeight:800,textAlign:"center"}}>L O D COLLECTION 2026</div>
+      </div>
+      {/* 9:16 2열 그리드 */}
+      <div style={{padding:"24px 20px 0",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        {LOOKS.map(l=>(
+          <div key={l.id} onClick={()=>openM(l)} className="lcard">
+            <div className="lcard-inner">
+              <div className="lcard-plus">+</div>
+              <span className="lcard-num">{l.label}</span>
+            </div>
+            <div className="lcard-info"><div className="lcard-style">{l.style}</div></div>
+            <div className="lcard-badge">{l.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── FOOTER ── */}
+      <footer style={{padding:"52px 20px 40px",textAlign:"center",borderTop:"1px solid rgba(240,236,228,.07)",borderRadius:"22px 22px 0 0",background:"#0d0d0d",marginTop:48}}>
+        <svg width="44" height="44" viewBox="0 0 100 100" fill="none" style={{margin:"0 auto",display:"block"}}>
+          <circle cx="50" cy="50" r="46" stroke="rgba(240,236,228,.2)" strokeWidth="5" fill="none"/>
+          <text x="14" y="72" fontFamily="Georgia,serif" fontWeight="900" fontSize="62" fill="rgba(240,236,228,.2)" letterSpacing="-2">LD</text>
+        </svg>
+        <div style={{fontSize:16,fontWeight:900,letterSpacing:".26em",color:"rgba(240,236,228,.2)",margin:"10px 0"}}>L O D</div>
+        <p style={{fontSize:11,color:"rgba(240,236,228,.18)",letterSpacing:".1em",lineHeight:2.1,textAlign:"center"}}>
+          Layer On Drape · 동대문 새벽시장 전문 사입 서비스<br/>정확한 픽업, 꼼꼼한 검수 · 마감 AM 03:00
+        </p>
+      </footer>
+
+      {modal&&<Modal look={modal} idx={mIdx} total={LOOKS.length} onClose={()=>setModal(null)} onPrev={prev} onNext={next}/>}
+    </div>
+  );
+}
+
+/* ── AGENT PAGE ─────────────────────────────────────────────── */
+function Agent({ag,onBack,onAgent}){
+  useEffect(()=>{window.scrollTo({top:0});},[ag.id]);
+  return(
+    <div className="fade-in">
+      {/* 백 버튼 */}
+      <div style={{padding:"18px 20px 0"}}>
+        <button onClick={onBack} style={{background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:6,fontSize:11,letterSpacing:".26em",color:"rgba(240,236,228,.38)",textTransform:"uppercase",padding:0,fontFamily:"inherit",transition:"color .2s"}}
+          onMouseEnter={e=>e.currentTarget.style.color="rgba(240,236,228,.75)"}
+          onMouseLeave={e=>e.currentTarget.style.color="rgba(240,236,228,.38)"}>
+          <span style={{fontSize:16}}>←</span> Back to L O D
+        </button>
+      </div>
+
+      {/* 9:16 영상 */}
+      <div style={{padding:"16px 20px 0"}}>
+        <VBox label={`${ag.regionLabel} 소개 영상`}/>
+      </div>
+
+      {/* 카카오 버튼 */}
+      <div style={{padding:"16px 20px 0"}}>
+        <a href={ag.kakaoUrl} target="_blank" rel="noopener noreferrer"
+          style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,background:"#f0ece4",color:"#0a0a0a",padding:"18px",fontSize:15,fontWeight:900,textDecoration:"none",textTransform:"uppercase",borderRadius:50,letterSpacing:".1em",transition:"opacity .2s"}}
+          onMouseEnter={e=>e.currentTarget.style.opacity=".84"}
+          onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#0a0a0a"><path d="M12 3C7.03 3 3 6.36 3 10.5c0 2.56 1.48 4.83 3.74 6.26l-.95 3.54 4.1-2.04c.67.1 1.37.16 2.11.16 4.97 0 9-3.36 9-7.5S16.97 3 12 3z"/></svg>
+          카카오톡 사입 문의하기
+        </a>
+        <div style={{textAlign:"center",fontSize:9,letterSpacing:".18em",color:"rgba(240,236,228,.2)",textTransform:"uppercase",marginTop:8}}>마감 AM 03:00</div>
+      </div>
+
+      {/* 에이전트 정보 */}
+      <div style={{padding:"28px 20px",display:"flex",flexDirection:"column",gap:32,textAlign:"center"}}>
+        <div>
+          <div style={{fontSize:10,letterSpacing:".32em",color:"rgba(240,236,228,.28)",textTransform:"uppercase",marginBottom:12}}>{ag.regionEn}</div>
+          <h2 style={{fontSize:"clamp(24px,7.5vw,40px)",fontWeight:900,lineHeight:1.15,marginBottom:10}}>{ag.regionLabel}</h2>
+          <div style={{fontSize:20,color:"rgba(240,236,228,.42)",fontWeight:600}}>{ag.career} 베테랑 팀</div>
+        </div>
+        <div>
+          <div style={{fontSize:14,letterSpacing:".28em",color:"rgba(240,236,228,.26)",textTransform:"uppercase",marginBottom:14}}>Introduction</div>
+          {ag.intro.map((line,i)=>(
+            <p key={i} style={{fontSize:i===0?"clamp(17px,4.8vw,24px)":"clamp(14px,3.8vw,19px)",lineHeight:1.75,color:i===0?"rgba(240,236,228,.88)":"rgba(240,236,228,.5)",marginBottom:10,wordBreak:"keep-all"}}>{line}</p>
+          ))}
+        </div>
+        <div style={{textAlign:"left"}}>
+          <div style={{fontSize:14,letterSpacing:".28em",color:"rgba(240,236,228,.26)",textTransform:"uppercase",marginBottom:14,textAlign:"center"}}>사입 안내</div>
+          {ag.rules.map((r,i)=>(
+            <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"16px 0",borderBottom:"1px solid rgba(240,236,228,.07)"}}>
+              <span style={{fontSize:18,color:"rgba(240,236,228,.42)"}}>{r.title}</span>
+              <span style={{fontSize:22,fontWeight:900,color:"rgba(240,236,228,.95)"}}>{r.desc}</span>
+            </div>
+          ))}
+        </div>
+        <div>
+          <div style={{fontSize:14,letterSpacing:".28em",color:"rgba(240,236,228,.26)",textTransform:"uppercase",marginBottom:14}}>다른 지역 담당</div>
+          {AGENTS.filter(a=>a.id!==ag.id).map(other=>(
+            <button key={other.id} onClick={()=>onAgent(other)}
+              style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",padding:"20px 24px",background:"transparent",border:"1px solid rgba(240,236,228,.12)",borderRadius:18,cursor:"pointer",fontFamily:"inherit",marginBottom:10,transition:"all .22s",textAlign:"center"}}
+              onMouseEnter={e=>{e.currentTarget.style.background="rgba(240,236,228,.06)";e.currentTarget.style.borderColor="rgba(240,236,228,.28)";}}
+              onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor="rgba(240,236,228,.12)";}}>
+              <div style={{fontSize:"clamp(16px,4.8vw,22px)",fontWeight:700,color:"rgba(240,236,228,.6)",flex:1,textAlign:"center"}}>{other.regionLabel}</div>
+              <span style={{fontSize:"clamp(20px,5.5vw,26px)",color:"rgba(240,236,228,.24)"}}>→</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div style={{height:36}}/>
+    </div>
+  );
+}
+
+/* ── APP ─────────────────────────────────────────────────────── */
+function App(){
+  const [page,setPage]=useState("main");
+  const [ag,setAg]=useState(null);
+  const [chatOpen,setChatOpen]=useState(false);
+
+  const goAgent=a=>{setAg(a);setPage("agent");window.scrollTo({top:0});};
+  const goMain=()=>{setPage("main");setAg(null);};
+
+  return(
+    <div className="shell">
+      {/* NAV */}
+      <div className="nav">
+        <button className="nav-logo" onClick={goMain}>
+          <LDLogo size={56}/>
+          <span className="nav-logo-text">Layer On Drape</span>
+        </button>
+        <a href={MAIN_KAKAO} target="_blank" rel="noopener noreferrer" className="nav-cta">
+          사입 프로그램
+        </a>
+      </div>
+
+      {/* PAGE */}
+      <div className="fade-in" key={page}>
+        {page==="main"
+          ?<Main onAgent={goAgent} onChat={()=>setChatOpen(true)}/>
+          :<Agent ag={ag} onBack={goMain} onAgent={goAgent}/>
+        }
+      </div>
+
+      {/* CHAT */}
+      <Chat open={chatOpen} onClose={()=>setChatOpen(false)}/>
+
+      {/* 플로팅 챗 버튼 */}
+      <div style={{position:"sticky",bottom:0,display:"flex",justifyContent:"flex-end",padding:"0 16px 20px",marginTop:-62,pointerEvents:"none"}}>
+        <button onClick={()=>setChatOpen(v=>!v)} className={chatOpen?"":"float-pulse"}
+          style={{width:54,height:54,borderRadius:"50%",background:"#FEE500",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 20px rgba(254,229,0,.45)",transition:"transform .2s",pointerEvents:"auto"}}
+          onMouseEnter={e=>e.currentTarget.style.transform="scale(1.1)"}
+          onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}>
+          {chatOpen
+            ?<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#0a0a0a" strokeWidth="2.5" strokeLinecap="round"/></svg>
+            :<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="#0a0a0a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          }
+        </button>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
