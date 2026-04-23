@@ -17,14 +17,7 @@
       overflow-x:hidden;
       min-height:100%;
     }
-
-    /* ── 600px 에이블리 컨테이너 ── */
-    #root{
-      display:flex;
-      justify-content:center;
-      min-height:100vh;
-      background:#0a0a0a;
-    }
+    #root{ display:flex; justify-content:center; min-height:100vh; background:#0a0a0a; }
     .shell{
       width:100%;
       max-width:600px;
@@ -33,20 +26,13 @@
       position:relative;
       box-shadow:1px 0 0 rgba(240,236,228,0.07),-1px 0 0 rgba(240,236,228,0.07);
     }
-
-    /* 스크롤바 */
     ::-webkit-scrollbar{width:3px;}
     ::-webkit-scrollbar-thumb{background:rgba(240,236,228,.18);border-radius:2px;}
-
-    /* 애니메이션 */
     @keyframes fadeIn  {from{opacity:0}to{opacity:1}}
     @keyframes slideUp {from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
     @keyframes pulse   {0%,100%{box-shadow:0 0 0 0 rgba(254,229,0,.55)}60%{box-shadow:0 0 0 18px rgba(254,229,0,0)}}
     @keyframes dotB    {0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
-
     .fade-in{animation:fadeIn .35s ease;}
-
-    /* ── NAV ── */
     .nav{
       position:sticky;top:0;z-index:200;
       width:100%;
@@ -67,18 +53,13 @@
       white-space:nowrap;letter-spacing:.04em;
       flex-shrink:0;transition:opacity .2s;
     }
-    .nav-cta:hover{opacity:.82;}
-
-    /* ── 9:16 VIDEO BOX — 사장님 지정 400px 고정 ── */
-    .vbox-wrap{
-      display:flex;
-      justify-content:center;
-      width:100%;
-    }
+    
+    /* ── 9:16 VIDEO BOX — 사장님 지정 400px 황금폭 ── */
+    .vbox-wrap{ display:flex; justify-content:center; width:100%; }
     .vbox{
-      width:400px; /* 사장님의 '전~스' 라인 맞춤 */
-      max-width:90%;
-      aspect-ratio:9/16; /* 9:16 황금비율 */
+      width:400px; /* 전~스 라인 폭 */
+      max-width:95%;
+      aspect-ratio:9/16;
       background:#111;
       border-radius:22px;
       overflow:hidden;
@@ -92,131 +73,23 @@
     .vbox-tri{width:0;height:0;border-top:12px solid transparent;border-bottom:12px solid transparent;border-left:20px solid rgba(240,236,228,.38);margin-left:5px;}
     .vbox-label{font-size:11px;letter-spacing:.36em;color:rgba(240,236,228,.2);text-transform:uppercase;}
 
-    /* ── LOOK CARD ── */
+    /* ── LOOK CARD — 영상 폭에 맞춰 2열 정렬 ── */
+    .look-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: 400px; /* 영상과 동일한 폭으로 정렬 */
+      margin: 24px auto 0;
+    }
     .lcard{
       position:relative;
-      width:100%;
-      aspect-ratio:9/16;
+      padding-top:177.78%; /* 9:16 */
       background:#111;
       border:1px solid rgba(240,236,228,.1);
       border-radius:18px;
       overflow:hidden;
       cursor:pointer;
+      transition:border-color .3s;
     }
     .lcard-inner{position:absolute;inset:0;background:#141414;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
-    .lcard-plus{width:42px;height:42px;border:1px solid rgba(240,236,228,.12);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;color:rgba(240,236,228,.18);}
-    .lcard-num{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(240,236,228,.2);}
-    .lcard-badge{position:absolute;top:10px;left:10px;font-size:9px;letter-spacing:.2em;color:rgba(240,236,228,.22);}
-
-    .chat-pulse{animation:pulse 2.2s ease-in-out infinite;}
-    .float-pulse{animation:pulse 2s ease-in-out infinite;}
-    .steps-row{display:flex;align-items:center;overflow-x:auto;padding-bottom:2px;}
-    .steps-row::-webkit-scrollbar{display:none;}
-    .rbtn{display:flex;align-items:center;justify-content:space-between;width:100%;border:none;border-radius:20px;cursor:pointer;font-family:inherit;transition:transform .2s;}
-    textarea{outline:none;}
-  </style>
-</head>
-<body>
-<div id="root"></div>
-<script type="text/babel">
-const {useState,useEffect,useRef} = React;
-
-const AGENTS=[
-  {id:"SN",regionLabel:"강북·도봉·노원·중랑",regionEn:"SEOUL NORTH AREA",career:"18년 베테랑",
-   kakaoUrl:"https://open.kakao.com/SEOUL_NORTH",videoUrl:"",
-   intro:["L O D 서울 강북권 대표 베테랑 팀입니다.","18년의 숙련된 노하우로 단순 사입 이상의 가치를 제공합니다.","트렌드와 마켓 정보를 함께 공유해 드립니다."],
-   rules:[{title:"사입 신청 마감",desc:"매일 AM 03:00"}]},
-  {id:"IB",regionLabel:"인천·부천",regionEn:"INCHEON · BUCHEON",career:"20년 베테랑",
-   kakaoUrl:"https://open.kakao.com/INCHEON_BUCHEON",videoUrl:"",
-   intro:["인천·부천 지역 사입의 최고 전문가 팀입니다.","20년 경력의 완벽한 픽업과 빠른 피드백을 약속드립니다.","경기권 로드샵 사장님들의 든든한 파트너가 되겠습니다."],
-   rules:[{title:"사입 신청 마감",desc:"매일 AM 02:30"}]},
-];
-const STEPS=["사입 신청","현장 픽업","지역별 분류","안전 배송"];
-const LOOKS=[
-  {id:1,label:"EDITORIAL 01",style:"MINIMAL CHIC"},
-  {id:2,label:"EDITORIAL 02",style:"OVERFIT STREET"},
-  {id:3,label:"EDITORIAL 03",style:"MODERN CLASSIC"},
-  {id:4,label:"EDITORIAL 04",style:"URBAN CASUAL"},
-];
-const MAIN_KAKAO="https://open.kakao.com/LOD_MAIN";
-const SYS=`당신은 동대문 새벽시장 전문 사입 서비스 'L O D'의 24시간 AI 비서입니다...`;
-
-function useClock(){
-  const [t,setT]=useState(new Date());
-  useEffect(()=>{const id=setInterval(()=>setT(new Date()),1000);return()=>clearInterval(id);},[]);
-  return t.toLocaleTimeString("ko-KR",{hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit"});
-}
-
-function LDLogo({size=54}){
-  return(
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none">
-      <circle cx="50" cy="50" r="46" stroke="#f0ece4" strokeWidth="5" fill="none"/>
-      <text x="14" y="72" fontFamily="Georgia,serif" fontWeight="900" fontSize="62" fill="#f0ece4" letterSpacing="-2">LD</text>
-    </svg>
-  );
-}
-
-function VBox({url,label}){
-  return(
-    <div className="vbox-wrap">
-      <div className="vbox">
-        {url ? <video src={url} autoPlay muted loop playsInline/> : <div className="vbox-ph"><div className="vbox-circle"><div className="vbox-tri"/></div><span className="vbox-label">{label||"VIDEO PLAY"}</span></div>}
-      </div>
-    </div>
-  );
-}
-
-function Chat({open,onClose}){
-  const [msgs,setMsgs]=useState([{role:"assistant",content:"안녕하세요! L O D AI 비서입니다 😊\n사입에 대해 궁금한 것을 무엇이든 물어보세요!"}]);
-  return (
-    <div style={{display:open?"block":"none", position:"fixed", bottom:0, left:"50%", transform:"translateX(-50%)", width:"100%", maxWidth:600, height:"80vh", background:"#111", zIndex:900, borderRadius:"24px 24px 0 0", border:"1px solid rgba(240,236,228,.15)"}}>
-      <div style={{padding:20, textAlign:"right"}}><button onClick={onClose} style={{background:"none", border:"none", color:"#fff", fontSize:20}}>×</button></div>
-      <div style={{padding:20, color:"#fff"}}>{msgs[0].content}</div>
-    </div>
-  );
-}
-
-function Main({onAgent,onChat}){
-  const clock=useClock();
-  return(
-    <div>
-      <div style={{padding:"24px 20px 16px",textAlign:"center"}}>
-        <div style={{fontSize:"clamp(28px,7.5vw,44px)",fontWeight:900,letterSpacing:".1em",lineHeight:1.28}}>동대문 새벽시장<br/>전문 사입 서비스</div>
-      </div>
-      <div style={{padding:"0 20px"}}><VBox label="L O D FILM"/></div>
-      <div style={{padding:"20px 20px 0",display:"flex",justifyContent:"center"}}>
-        <button onClick={onChat} className="chat-pulse" style={{width:"62%",padding:"16px",background:"#fff",borderRadius:22,fontWeight:900}}>💬 24시 AI 챗!!</button>
-      </div>
-      <div style={{margin:"20px 20px 0",borderTop:"2px solid rgba(240,236,228,.18)",padding:"22px 0",textAlign:"center"}}>
-        <div style={{fontSize:12,color:"rgba(240,236,228,.38)"}}>CURRENT MARKET TIME</div>
-        <div style={{fontSize:48,fontWeight:800}}>{clock}</div>
-      </div>
-      <div style={{padding:"20px",display:"flex",flexDirection:"column",gap:12}}>
-        {AGENTS.map(ag=>(<button key={ag.id} onClick={()=>onAgent(ag)} className="rbtn" style={{padding:"28px",background:"#FEE500",fontWeight:900,fontSize:24}}>{ag.regionLabel} →</button>))}
-      </div>
-      <div style={{padding:"52px 20px 40px",textAlign:"center",background:"#0d0d0d",marginTop:48}}>
-        <LDLogo size={44}/><div style={{fontSize:16,fontWeight:900,color:"rgba(240,236,228,.2)"}}>L O D</div>
-      </div>
-    </div>
-  );
-}
-
-function App(){
-  const [page,setPage]=useState("main");
-  const [ag,setAg]=useState(null);
-  const [chatOpen,setChatOpen]=useState(false);
-  return(
-    <div className="shell">
-      <div className="nav">
-        <button className="nav-logo" onClick={()=>setPage("main")}><LDLogo size={56}/><span className="nav-logo-text">Layer On Drape</span></button>
-        <a href={MAIN_KAKAO} target="_blank" className="nav-cta">사입 프로그램</a>
-      </div>
-      {page==="main" ? <Main onAgent={a=>{setAg(a);setPage("agent")}} onChat={()=>setChatOpen(true)}/> : <div style={{padding:20}}><button onClick={()=>setPage("main")}>← Back</button><h2>{ag?.regionLabel}</h2></div>}
-      <Chat open={chatOpen} onClose={()=>setChatOpen(false)}/>
-    </div>
-  );
-}
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-</script>
-</body>
-</html>
+    .lcard-plus{width:42px;height:42px;border:1px solid rgba(240,236,228,.12);
