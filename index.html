@@ -27,11 +27,10 @@
     }
     .shell{
       width:100%;
-      max-width:640px;
+      max-width:600px;
       min-height:100vh;
       background:#0a0a0a;
       position:relative;
-      /* PC 양옆 구분선 */
       box-shadow:1px 0 0 rgba(240,236,228,0.07),-1px 0 0 rgba(240,236,228,0.07);
     }
 
@@ -73,19 +72,15 @@
     /* ── 9:16 VIDEO BOX ── */
     .vbox{
       position:relative;
-      /* 9:16 비율 고정 */
+      width:100%;
+      /* 9:16 = 패딩으로 비율 고정 */
       padding-top:177.78%;
       background:#111;
       border-radius:22px;
       overflow:hidden;
       border:1px solid rgba(240,236,228,.1);
-      /* PC에서 높이 제한: max-height로 화면 넘침 방지 */
-      max-height:72vh;
     }
-    /* max-height 초과 시 padding-top 무시하고 고정 높이 활용 */
-    @media(min-width:600px){
-      .vbox{padding-top:0;height:min(72vh,calc(640px * 16/9));}
-    }
+    /* PC: 600px 컨테이너 안에서 자동으로 9:16 — 추가 override 불필요 */
     .vbox video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
     .vbox-ph{position:absolute;inset:0;background:linear-gradient(160deg,#1d1d1d,#0d0d0d);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;}
     .vbox-circle{width:80px;height:80px;border-radius:50%;border:1px solid rgba(240,236,228,.18);display:flex;align-items:center;justify-content:center;}
@@ -253,7 +248,7 @@ function Chat({open,onClose}){
       <div style={{
         position:"fixed",bottom:0,left:"50%",
         transform:`translateX(-50%) translateY(${open?"0":"100%"})`,
-        width:"100%",maxWidth:640,
+        width:"100%",maxWidth:600,
         zIndex:900,height:"80vh",
         background:"#111",borderRadius:"24px 24px 0 0",
         border:"1px solid rgba(240,236,228,.15)",
@@ -537,5 +532,3 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
 </html>
-
-
