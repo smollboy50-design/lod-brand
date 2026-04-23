@@ -1,68 +1,97 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>L O D — 동대문 새벽시장 전문 사입 서비스</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet"/>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script>
-    tailwind.config = {
-      theme: { extend: { fontFamily: { sans: ["'Noto Sans KR'","sans-serif"] } } }
-    }
-  </script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    body{background:#0a0a0a;color:#f0ece4;font-family:'Noto Sans KR',sans-serif;overflow-x:hidden;}
-    ::-webkit-scrollbar{width:4px;}
-    ::-webkit-scrollbar-thumb{background:rgba(240,236,228,.2);border-radius:2px;}
+    html,body{background:#0a0a0a;color:#f0ece4;font-family:'Noto Sans KR',sans-serif;overflow-x:hidden;min-height:100%;}
 
+    /* ── 에이블리 스타일: 600px 중앙 컨테이너 ── */
+    #root{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      background:#0a0a0a;
+    }
+    .app-shell{
+      width:100%;
+      max-width:600px;
+      min-height:100vh;
+      background:#0a0a0a;
+      position:relative;
+      /* PC에서 양옆 구분선 */
+      box-shadow: 1px 0 0 rgba(240,236,228,0.06), -1px 0 0 rgba(240,236,228,0.06);
+    }
+
+    /* 스크롤바 */
+    ::-webkit-scrollbar{width:3px;}
+    ::-webkit-scrollbar-thumb{background:rgba(240,236,228,.18);border-radius:2px;}
+
+    /* 애니메이션 */
     @keyframes fadeIn  {from{opacity:0}to{opacity:1}}
     @keyframes slideUp {from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes pulse   {0%,100%{box-shadow:0 0 0 0 rgba(254,229,0,.5)}60%{box-shadow:0 0 0 14px rgba(254,229,0,0)}}
+    @keyframes pulse   {0%,100%{box-shadow:0 0 0 0 rgba(254,229,0,.55)}60%{box-shadow:0 0 0 16px rgba(254,229,0,0)}}
     @keyframes dotB    {0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+    @keyframes slideSheet{from{transform:translateY(100%)}to{transform:translateY(0)}}
 
     .fade-in{animation:fadeIn .35s ease;}
+
+    /* NAV — 600px 컨테이너 안에 fixed처럼 동작 */
+    .nav-bar{
+      position:sticky;top:0;z-index:100;
+      width:100%;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 20px;
+      height:70px;
+      background:rgba(10,10,10,0.96);
+      backdrop-filter:blur(16px);
+      border-bottom:1px solid rgba(240,236,228,0.08);
+      border-radius:0 0 22px 22px;
+      transition:background .3s;
+    }
+
+    /* VIDEO BOX */
+    .video-box{position:relative;padding-top:177.78%;background:#111;border-radius:24px;overflow:hidden;border:1px solid rgba(240,236,228,.1);}
+    .video-box video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+    .video-ph{position:absolute;inset:0;background:linear-gradient(160deg,#1d1d1d,#0d0d0d);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;}
+
+    /* STEPS */
+    .steps-row{display:flex;align-items:center;overflow-x:auto;padding-bottom:2px;}
+    .steps-row::-webkit-scrollbar{display:none;}
+
+    /* CHAT */
     .chat-pulse{animation:pulse 2.2s ease-in-out infinite;}
     .chat-pulse:hover{animation-play-state:paused;}
     .float-pulse{animation:pulse 2s ease-in-out infinite;}
 
-    .video-box{position:relative;padding-top:177.78%;background:#111;border-radius:28px;overflow:hidden;border:1px solid rgba(240,236,228,.1);}
-    .video-box video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-    .video-ph{position:absolute;inset:0;background:linear-gradient(160deg,#1d1d1d 0%,#0d0d0d 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;}
+    /* LOOK CARD HOVER */
+    .look-card{transition:border-color .3s;}
+    .look-card:hover{border-color:rgba(240,236,228,.28)!important;}
+    .look-card:hover .lc-inner{background:#1c1c1c!important;}
+    .look-card:hover .lc-info{opacity:1!important;}
 
-    .steps-row{display:flex;align-items:center;overflow-x:auto;padding-bottom:2px;}
-    .steps-row::-webkit-scrollbar{display:none;}
+    /* REGION BTN */
+    .region-btn{transition:transform .2s,filter .2s;}
+    .region-btn:hover{transform:scale(1.01);filter:brightness(1.06);}
 
     textarea::placeholder{color:rgba(240,236,228,.3);}
     textarea{outline:none;}
-
-    /* mobile */
-    @media(max-width:860px){
-      .hero-section{grid-template-columns:1fr !important;padding-top:62px !important;}
-      .hero-left{border-right:none !important;border-bottom:1px solid rgba(240,236,228,.08);padding:18px !important;}
-      .hero-right{padding:20px 18px !important;gap:20px !important;}
-      .editorial-section{padding:48px 16px !important;}
-      .look-grid{grid-template-columns:repeat(2,1fr) !important;}
-      footer{padding:48px 16px !important;}
-      .agent-wrap{grid-template-columns:1fr !important;padding:0 16px 64px !important;}
-      .agent-left{position:static !important;padding-right:0 !important;padding-bottom:28px;}
-      .agent-right{border-left:none !important;padding-left:0 !important;border-top:1px solid rgba(240,236,228,.08);padding-top:28px !important;}
-      .nav-inner{height:62px !important;padding:0 14px !important;border-radius:0 0 18px 18px !important;}
-      .nav-logo-text{display:none !important;}
-    }
   </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const {useState,useEffect,useRef} = React;
+const {useState,useEffect,useRef,useCallback} = React;
 
-/* DATA */
+/* ─── DATA ───────────────────────────────────────────────────── */
 const AGENTS=[
   {id:"seoul-north",regionLabel:"강북·도봉·노원·중랑",regionEn:"SEOUL NORTH AREA",career:"18년 베테랑",
    kakaoUrl:"https://open.kakao.com/SEOUL_NORTH",videoUrl:"",
@@ -83,42 +112,32 @@ const LOOKS=[
 const MAIN_KAKAO="https://open.kakao.com/LOD_MAIN";
 const SYS=`당신은 동대문 새벽시장 전문 사입 서비스 'L O D'의 24시간 AI 비서입니다. 사입 서비스, 동대문 시장, 패션 트렌드에 대해 친절하고 전문적으로 답변하세요. 담당 지역: 서울 강북권(18년 경력), 인천·부천(20년 경력). 사입 마감: 매일 AM 03:00. 2-4문장으로 한국어로만 답변하세요.`;
 
-/* HOOKS */
+/* ─── HOOKS ──────────────────────────────────────────────────── */
 function useClock(){
   const [t,setT]=useState(new Date());
   useEffect(()=>{const id=setInterval(()=>setT(new Date()),1000);return()=>clearInterval(id);},[]);
   return t.toLocaleTimeString("ko-KR",{hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit"});
 }
-function useIsMobile(){
-  const [m,setM]=useState(window.innerWidth<860);
-  useEffect(()=>{const fn=()=>setM(window.innerWidth<860);window.addEventListener("resize",fn);return()=>window.removeEventListener("resize",fn);},[]);
-  return m;
-}
-function useScrolled(){
-  const [s,setS]=useState(false);
-  useEffect(()=>{const fn=()=>setS(window.scrollY>60);window.addEventListener("scroll",fn,{passive:true});return()=>window.removeEventListener("scroll",fn);},[]);
-  return s;
-}
 
-/* LD LOGO */
-function LDLogo({size=54,alpha=1}){
+/* ─── LD LOGO SVG ─────────────────────────────────────────────── */
+function LDLogo({size=52,alpha=1}){
   return(
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" style={{opacity:alpha}}>
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" style={{opacity:alpha,flexShrink:0}}>
       <circle cx="50" cy="50" r="46" stroke="#f0ece4" strokeWidth="5" fill="none"/>
       <text x="14" y="72" fontFamily="Georgia,serif" fontWeight="900" fontSize="62" fill="#f0ece4" letterSpacing="-2">LD</text>
     </svg>
   );
 }
 
-/* VIDEO BOX */
+/* ─── VIDEO BOX ──────────────────────────────────────────────── */
 function VideoBox({videoUrl,label}){
   return(
     <div className="video-box">
       {videoUrl
         ?<video src={videoUrl} autoPlay muted loop playsInline/>
         :<div className="video-ph">
-           <div style={{width:80,height:80,borderRadius:"50%",border:"1px solid rgba(240,236,228,.18)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-             <div style={{width:0,height:0,borderTop:"11px solid transparent",borderBottom:"11px solid transparent",borderLeft:"19px solid rgba(240,236,228,.38)",marginLeft:6}}/>
+           <div style={{width:76,height:76,borderRadius:"50%",border:"1px solid rgba(240,236,228,.18)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+             <div style={{width:0,height:0,borderTop:"11px solid transparent",borderBottom:"11px solid transparent",borderLeft:"18px solid rgba(240,236,228,.38)",marginLeft:5}}/>
            </div>
            <span style={{fontSize:11,letterSpacing:".36em",color:"rgba(240,236,228,.2)",textTransform:"uppercase"}}>{label||"VIDEO PLAY"}</span>
          </div>
@@ -127,7 +146,7 @@ function VideoBox({videoUrl,label}){
   );
 }
 
-/* LOOK MODAL */
+/* ─── LOOK MODAL ─────────────────────────────────────────────── */
 function LookModal({look,idx,total,onClose,onPrev,onNext}){
   useEffect(()=>{
     const fn=e=>{if(e.key==="Escape")onClose();if(e.key==="ArrowLeft")onPrev();if(e.key==="ArrowRight")onNext();};
@@ -135,85 +154,113 @@ function LookModal({look,idx,total,onClose,onPrev,onNext}){
   },[]);
   return(
     <div onClick={onClose} style={{position:"fixed",inset:0,zIndex:800,background:"rgba(4,4,4,.97)",backdropFilter:"blur(16px)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,animation:"fadeIn .2s ease"}}>
-      <button onClick={onClose} style={{position:"fixed",top:20,right:20,width:44,height:44,borderRadius:"50%",border:"1px solid rgba(240,236,228,.25)",background:"transparent",color:"rgba(240,236,228,.6)",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
-      {idx>0&&<button onClick={e=>{e.stopPropagation();onPrev();}} style={{position:"fixed",left:14,top:"50%",transform:"translateY(-50%)",width:44,height:44,borderRadius:"50%",border:"1px solid rgba(240,236,228,.2)",background:"transparent",color:"rgba(240,236,228,.55)",fontSize:24,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>‹</button>}
-      {idx<total-1&&<button onClick={e=>{e.stopPropagation();goNext();}} style={{position:"fixed",right:14,top:"50%",transform:"translateY(-50%)",width:44,height:44,borderRadius:"50%",border:"1px solid rgba(240,236,228,.2)",background:"transparent",color:"rgba(240,236,228,.55)",fontSize:24,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>›</button>}
-      <div onClick={e=>e.stopPropagation()} style={{width:"min(320px,74vw)",display:"flex",flexDirection:"column",gap:16,animation:"slideUp .25s ease"}}>
-        <div style={{aspectRatio:"3/4",borderRadius:28,border:"1px solid rgba(240,236,228,.12)",overflow:"hidden",background:"#181818",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12}}>
-          <div style={{fontSize:28,fontWeight:900,letterSpacing:".1em",color:"rgba(240,236,228,.15)"}}>{look.label}</div>
-          <div style={{fontSize:10,letterSpacing:".24em",color:"rgba(240,236,228,.1)"}}>AI MODEL · L O D</div>
+      <button onClick={onClose} style={{position:"fixed",top:18,right:18,width:42,height:42,borderRadius:"50%",border:"1px solid rgba(240,236,228,.25)",background:"transparent",color:"rgba(240,236,228,.6)",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",zIndex:810}}>×</button>
+      {idx>0&&<button onClick={e=>{e.stopPropagation();onPrev();}} style={{position:"fixed",left:12,top:"50%",transform:"translateY(-50%)",width:42,height:42,borderRadius:"50%",border:"1px solid rgba(240,236,228,.2)",background:"transparent",color:"rgba(240,236,228,.55)",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",zIndex:810}}>‹</button>}
+      {idx<total-1&&<button onClick={e=>{e.stopPropagation();onNext();}} style={{position:"fixed",right:12,top:"50%",transform:"translateY(-50%)",width:42,height:42,borderRadius:"50%",border:"1px solid rgba(240,236,228,.2)",background:"transparent",color:"rgba(240,236,228,.55)",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",zIndex:810}}>›</button>}
+      <div onClick={e=>e.stopPropagation()} style={{width:"min(300px,72vw)",display:"flex",flexDirection:"column",gap:14,animation:"slideUp .25s ease"}}>
+        <div style={{aspectRatio:"3/4",borderRadius:24,border:"1px solid rgba(240,236,228,.12)",background:"#181818",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,overflow:"hidden"}}>
+          <div style={{fontSize:24,fontWeight:900,letterSpacing:".1em",color:"rgba(240,236,228,.15)"}}>{look.label}</div>
+          <div style={{fontSize:9,letterSpacing:".24em",color:"rgba(240,236,228,.1)"}}>AI MODEL · L O D</div>
         </div>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",padding:"0 2px"}}>
           <div>
-            <div style={{fontSize:13,fontWeight:900,letterSpacing:".18em",textTransform:"uppercase",color:"rgba(240,236,228,.75)"}}>{look.style}</div>
-            <div style={{fontSize:10,letterSpacing:".12em",color:"rgba(240,236,228,.3)",marginTop:3}}>{look.label}</div>
+            <div style={{fontSize:12,fontWeight:900,letterSpacing:".18em",textTransform:"uppercase",color:"rgba(240,236,228,.75)"}}>{look.style}</div>
+            <div style={{fontSize:10,letterSpacing:".12em",color:"rgba(240,236,228,.3)",marginTop:2}}>{look.label}</div>
           </div>
           <div style={{fontSize:10,color:"rgba(240,236,228,.22)"}}>{idx+1} / {total}</div>
         </div>
-        <div style={{display:"flex",justifyContent:"center",gap:6}}>
-          {LOOKS.map((_,i)=><div key={i} style={{height:5,borderRadius:3,cursor:"pointer",transition:"all .25s",width:i===idx?"20px":"5px",background:i===idx?"rgba(240,236,228,.65)":"rgba(240,236,228,.18)"}}/>)}
+        <div style={{display:"flex",justifyContent:"center",gap:5}}>
+          {LOOKS.map((_,i)=><div key={i} onClick={e=>{e.stopPropagation();}} style={{height:5,borderRadius:3,cursor:"pointer",transition:"all .25s",width:i===idx?"18px":"5px",background:i===idx?"rgba(240,236,228,.65)":"rgba(240,236,228,.18)"}}/>)}
         </div>
       </div>
     </div>
   );
 }
 
-/* AI CHAT */
-function AiChat({open,onClose,isMobile}){
+/* ─── AI CHAT ─────────────────────────────────────────────────── */
+function AiChat({open,onClose}){
   const [msgs,setMsgs]=useState([{role:"assistant",content:"안녕하세요! L O D AI 비서입니다 😊\n사입에 대해 궁금한 것을 무엇이든 물어보세요!"}]);
   const [input,setInput]=useState("");
   const [loading,setLoading]=useState(false);
   const bottomRef=useRef(null);
   const inputRef=useRef(null);
 
-  useEffect(()=>{if(open){setTimeout(()=>bottomRef.current?.scrollIntoView({behavior:"smooth"}),100);setTimeout(()=>inputRef.current?.focus(),320);}},[open,msgs.length]);
+  useEffect(()=>{
+    if(open){
+      setTimeout(()=>bottomRef.current?.scrollIntoView({behavior:"smooth"}),100);
+      setTimeout(()=>inputRef.current?.focus(),320);
+    }
+  },[open,msgs.length]);
 
   const send=async()=>{
     const text=input.trim();if(!text||loading)return;
     const newMsgs=[...msgs,{role:"user",content:text}];
     setMsgs(newMsgs);setInput("");setLoading(true);
     try{
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYS,messages:newMsgs.map(m=>({role:m.role,content:m.content}))})});
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYS,
+          messages:newMsgs.map(m=>({role:m.role,content:m.content}))})});
       const data=await res.json();
       setMsgs(prev=>[...prev,{role:"assistant",content:data.content?.[0]?.text||"죄송합니다, 잠시 후 다시 시도해 주세요."}]);
-    }catch{setMsgs(prev=>[...prev,{role:"assistant",content:"연결에 문제가 생겼어요. 잠시 후 다시 시도해 주세요."}]);}
+    }catch{
+      setMsgs(prev=>[...prev,{role:"assistant",content:"연결에 문제가 생겼어요. 잠시 후 다시 시도해 주세요."}]);
+    }
     setLoading(false);
   };
   const onKey=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}};
 
-  const base={background:"#111",border:"1px solid rgba(240,236,228,.15)",display:"flex",flexDirection:"column"};
-  const st=isMobile
-    ?{...base,position:"fixed",bottom:0,left:0,right:0,zIndex:900,height:"82vh",borderRadius:"28px 28px 0 0",boxShadow:"0 -8px 48px rgba(0,0,0,.7)",transition:"transform .4s cubic-bezier(.32,.72,0,1)",transform:open?"translateY(0)":"translateY(100%)"}
-    :{...base,position:"fixed",bottom:32,right:32,zIndex:900,width:400,height:580,borderRadius:28,boxShadow:"0 8px 48px rgba(0,0,0,.7)",transition:"opacity .3s ease,transform .3s cubic-bezier(.32,.72,0,1)",opacity:open?1:0,transform:open?"translateY(0) scale(1)":"translateY(14px) scale(.97)",pointerEvents:open?"auto":"none"};
-
+  /* 항상 화면 하단 슬라이드업 (모바일/PC 동일) */
   return(
     <>
-      {isMobile&&<div onClick={onClose} style={{position:"fixed",inset:0,zIndex:899,background:"rgba(0,0,0,.6)",backdropFilter:"blur(4px)",opacity:open?1:0,pointerEvents:open?"auto":"none",transition:"opacity .35s"}}/>}
-      <div style={st}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 20px 14px",borderBottom:"1px solid rgba(240,236,228,.1)",flexShrink:0,position:"relative"}}>
-          {isMobile&&<div style={{position:"absolute",top:8,left:"50%",transform:"translateX(-50%)",width:36,height:4,borderRadius:2,background:"rgba(240,236,228,.22)"}}/>}
+      <div onClick={onClose} style={{position:"fixed",inset:0,zIndex:899,background:"rgba(0,0,0,.6)",backdropFilter:"blur(4px)",opacity:open?1:0,pointerEvents:open?"auto":"none",transition:"opacity .35s"}}/>
+      <div style={{
+        position:"fixed",bottom:0,left:"50%",transform:`translateX(-50%) translateY(${open?"0":"100%"})`,
+        width:"100%",maxWidth:600,
+        zIndex:900,height:"82vh",
+        background:"#111",
+        borderRadius:"26px 26px 0 0",
+        border:"1px solid rgba(240,236,228,.15)",
+        display:"flex",flexDirection:"column",
+        boxShadow:"0 -8px 48px rgba(0,0,0,.7)",
+        transition:"transform .4s cubic-bezier(.32,.72,0,1)",
+      }}>
+        {/* 핸들 */}
+        <div style={{position:"absolute",top:8,left:"50%",transform:"translateX(-50%)",width:36,height:4,borderRadius:2,background:"rgba(240,236,228,.22)"}}/>
+        {/* 헤더 */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"20px 20px 14px",borderBottom:"1px solid rgba(240,236,228,.1)",flexShrink:0}}>
           <div>
             <div style={{fontSize:14,fontWeight:700,color:"#f0ece4",letterSpacing:".06em"}}>L O D AI 비서</div>
-            <div style={{fontSize:10,color:"#FEE500",marginTop:2,letterSpacing:".08em"}}>● 24시간 응대</div>
+            <div style={{fontSize:10,color:"#FEE500",marginTop:2}}>● 24시간 응대</div>
           </div>
           <button onClick={onClose} style={{width:30,height:30,borderRadius:"50%",background:"rgba(240,236,228,.08)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,color:"rgba(240,236,228,.6)"}}>×</button>
         </div>
+        {/* 메시지 */}
         <div style={{flex:1,overflowY:"auto",padding:"14px 16px",display:"flex",flexDirection:"column",gap:10}}>
           {msgs.map((msg,i)=>(
-            <div key={i} style={{maxWidth:"83%",padding:"11px 15px",fontSize:14,lineHeight:1.65,whiteSpace:"pre-wrap",wordBreak:"keep-all",borderRadius:msg.role==="user"?"20px 20px 6px 20px":"20px 20px 20px 6px",background:msg.role==="user"?"#FEE500":"rgba(240,236,228,.08)",color:msg.role==="user"?"#0a0a0a":"#f0ece4",fontWeight:msg.role==="user"?600:400,alignSelf:msg.role==="user"?"flex-end":"flex-start"}}>
+            <div key={i} style={{maxWidth:"83%",padding:"11px 15px",fontSize:14,lineHeight:1.65,whiteSpace:"pre-wrap",wordBreak:"keep-all",
+              borderRadius:msg.role==="user"?"20px 20px 6px 20px":"20px 20px 20px 6px",
+              background:msg.role==="user"?"#FEE500":"rgba(240,236,228,.08)",
+              color:msg.role==="user"?"#0a0a0a":"#f0ece4",
+              fontWeight:msg.role==="user"?600:400,
+              alignSelf:msg.role==="user"?"flex-end":"flex-start"}}>
               {msg.content}
             </div>
           ))}
-          {loading&&<div style={{alignSelf:"flex-start",padding:"11px 16px",borderRadius:"20px 20px 20px 6px",background:"rgba(240,236,228,.08)",display:"flex",gap:5,alignItems:"center"}}>
-            {[0,1,2].map(i=><div key={i} style={{width:7,height:7,borderRadius:"50%",background:"rgba(240,236,228,.42)",animation:`dotB 1.2s ease-in-out ${i*.2}s infinite`}}/>)}
-          </div>}
+          {loading&&(
+            <div style={{alignSelf:"flex-start",padding:"11px 16px",borderRadius:"20px 20px 20px 6px",background:"rgba(240,236,228,.08)",display:"flex",gap:5,alignItems:"center"}}>
+              {[0,1,2].map(i=><div key={i} style={{width:7,height:7,borderRadius:"50%",background:"rgba(240,236,228,.42)",animation:`dotB 1.2s ease-in-out ${i*.2}s infinite`}}/>)}
+            </div>
+          )}
           <div ref={bottomRef}/>
         </div>
-        <div style={{padding:"10px 14px 14px",borderTop:"1px solid rgba(240,236,228,.1)",display:"flex",gap:8,alignItems:"flex-end",flexShrink:0}}>
-          <textarea ref={inputRef} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={onKey} placeholder="사입에 대해 무엇이든 물어보세요..." rows={1}
-            style={{flex:1,background:"rgba(240,236,228,.07)",border:"1px solid rgba(240,236,228,.15)",borderRadius:18,padding:"10px 14px",fontSize:14,color:"#f0ece4",resize:"none",fontFamily:"inherit",lineHeight:1.5,maxHeight:90,overflowY:"auto"}}/>
-          <button onClick={send} disabled={loading||!input.trim()} style={{width:40,height:40,borderRadius:"50%",background:input.trim()&&!loading?"#FEE500":"rgba(240,236,228,.1)",border:"none",cursor:input.trim()&&!loading?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background .2s"}}>
+        {/* 입력 */}
+        <div style={{padding:"10px 14px 18px",borderTop:"1px solid rgba(240,236,228,.1)",display:"flex",gap:8,alignItems:"flex-end",flexShrink:0}}>
+          <textarea ref={inputRef} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={onKey}
+            placeholder="사입에 대해 무엇이든 물어보세요..." rows={1}
+            style={{flex:1,background:"rgba(240,236,228,.07)",border:"1px solid rgba(240,236,228,.15)",borderRadius:18,padding:"10px 14px",fontSize:14,color:"#f0ece4",resize:"none",fontFamily:"inherit",lineHeight:1.5,maxHeight:88,overflowY:"auto"}}/>
+          <button onClick={send} disabled={loading||!input.trim()}
+            style={{width:40,height:40,borderRadius:"50%",background:input.trim()&&!loading?"#FEE500":"rgba(240,236,228,.1)",border:"none",cursor:input.trim()&&!loading?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background .2s"}}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
               <path d="M22 2L11 13" stroke={input.trim()&&!loading?"#0a0a0a":"rgba(240,236,228,.28)"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke={input.trim()&&!loading?"#0a0a0a":"rgba(240,236,228,.28)"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -225,7 +272,7 @@ function AiChat({open,onClose,isMobile}){
   );
 }
 
-/* MAIN PAGE */
+/* ─── MAIN PAGE ──────────────────────────────────────────────── */
 function MainPage({onAgent,onOpenChat}){
   const clock=useClock();
   const [modal,setModal]=useState(null);
@@ -235,107 +282,102 @@ function MainPage({onAgent,onOpenChat}){
   const goNext=()=>{if(mIdx<LOOKS.length-1){const i=mIdx+1;setMIdx(i);setModal(LOOKS[i]);}};
 
   return(
-    <div style={{background:"#0a0a0a",color:"#f0ece4"}}>
-      {/* HERO */}
-      <section className="hero-section" style={{minHeight:"100vh",display:"grid",gridTemplateColumns:"1fr 1.2fr",paddingTop:90}}>
-        {/* left */}
-        <div className="hero-left" style={{display:"flex",alignItems:"center",justifyContent:"center",padding:28,borderRight:"1px solid rgba(240,236,228,.08)",background:"linear-gradient(135deg,rgba(18,18,18,.5) 0%,transparent 100%)"}}>
-          <div style={{width:"100%",maxWidth:520}}><VideoBox label="L O D FILM"/></div>
+    <div style={{color:"#f0ece4"}}>
+      {/* 메인 영상 */}
+      <div style={{padding:"20px 20px 0"}}>
+        <VideoBox label="L O D FILM"/>
+      </div>
+
+      {/* 콘텐츠 영역 */}
+      <div style={{padding:"24px 20px",display:"flex",flexDirection:"column",gap:24}}>
+
+        {/* 타이틀 */}
+        <div style={{textAlign:"center"}}>
+          <div style={{fontSize:"clamp(32px,8vw,48px)",fontWeight:900,letterSpacing:".1em",lineHeight:1.25,wordBreak:"keep-all"}}>
+            동대문 새벽시장<br/>전문 사입 서비스
+          </div>
         </div>
-        {/* right */}
-        <div className="hero-right" style={{display:"flex",flexDirection:"column",justifyContent:"center",padding:"56px 64px",gap:32}}>
-          {/* 타이틀 */}
-          <div style={{textAlign:"center"}}>
-            <div style={{fontSize:"clamp(40px,5.8vw,60px)",letterSpacing:".1em",fontWeight:900,lineHeight:1.25,wordBreak:"keep-all"}}>
-              동대문 새벽시장<br/>전문 사입 서비스
-            </div>
-          </div>
 
-          {/* ① AI 챗 버튼 — 흰색 배경, 가로 절반 */}
-          <div style={{display:"flex",justifyContent:"center"}}>
-            <button onClick={onOpenChat} className="chat-pulse"
-              style={{width:"60%",padding:"18px 16px",background:"#ffffff",color:"#0a0a0a",border:"none",borderRadius:24,cursor:"pointer",textAlign:"center",fontFamily:"inherit",fontWeight:900,fontSize:"clamp(14px,1.8vw,18px)",lineHeight:1.45,letterSpacing:".03em",transition:"transform .2s"}}>
-              💬 사입에 대해 무엇이든 물어보세요<br/>
-              <span style={{display:"block",textAlign:"center",marginTop:4,fontSize:".9em"}}>24시 AI 챗!!</span>
-            </button>
-          </div>
+        {/* AI 챗 버튼 — 흰색, 가로 60% */}
+        <div style={{display:"flex",justifyContent:"center"}}>
+          <button onClick={onOpenChat} className="chat-pulse"
+            style={{width:"60%",padding:"16px 14px",background:"#ffffff",color:"#0a0a0a",border:"none",borderRadius:22,cursor:"pointer",textAlign:"center",fontFamily:"inherit",fontWeight:900,fontSize:"clamp(13px,3.5vw,16px)",lineHeight:1.45,letterSpacing:".03em",transition:"transform .2s"}}>
+            💬 사입에 대해 무엇이든 물어보세요<br/>
+            <span style={{display:"block",textAlign:"center",marginTop:3,fontSize:".9em"}}>24시 AI 챗!!</span>
+          </button>
+        </div>
 
-          {/* 시계 + 스텝 */}
-          <div style={{borderTop:"2px solid rgba(240,236,228,.18)",borderBottom:"2px solid rgba(240,236,228,.18)",padding:"22px 0"}}>
-            <div style={{textAlign:"center",marginBottom:18}}>
-              <div style={{fontSize:12,letterSpacing:".34em",color:"rgba(240,236,228,.38)",textTransform:"uppercase",marginBottom:8,fontWeight:700}}>CURRENT MARKET TIME</div>
-              <div style={{fontFamily:"monospace",fontSize:"clamp(34px,5vw,60px)",fontWeight:800,letterSpacing:".04em",lineHeight:1}}>{clock}</div>
-            </div>
-            <div style={{background:"rgba(240,236,228,.04)",padding:"15px 18px",borderRadius:24}}>
-              <div style={{fontSize:13,fontWeight:800,color:"rgba(240,236,228,.42)",letterSpacing:".18em",textTransform:"uppercase",marginBottom:11}}>사입 진행 방식</div>
-              <div className="steps-row">
-                {STEPS.map((step,i)=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",flexShrink:0}}>
-                    <span style={{fontSize:"clamp(14px,2vw,21px)",fontWeight:900,whiteSpace:"nowrap"}}>{step}</span>
-                    {i<STEPS.length-1&&<span style={{margin:"0 8px",fontSize:12,color:"rgba(240,236,228,.32)",flexShrink:0}}>▶</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
+        {/* 시계 + 스텝 */}
+        <div style={{borderTop:"2px solid rgba(240,236,228,.18)",borderBottom:"2px solid rgba(240,236,228,.18)",padding:"20px 0"}}>
+          <div style={{textAlign:"center",marginBottom:16}}>
+            <div style={{fontSize:11,letterSpacing:".32em",color:"rgba(240,236,228,.38)",textTransform:"uppercase",marginBottom:7,fontWeight:700}}>CURRENT MARKET TIME</div>
+            <div style={{fontFamily:"monospace",fontSize:"clamp(32px,10vw,52px)",fontWeight:800,letterSpacing:".04em",lineHeight:1}}>{clock}</div>
           </div>
-
-          {/* PR */}
-          <div style={{borderLeft:"8px solid #f0ece4",padding:"16px 32px",borderRadius:"0 24px 24px 0",background:"rgba(240,236,228,.03)"}}>
-            <p style={{fontSize:"clamp(17px,2.4vw,28px)",lineHeight:1.55,fontWeight:900,wordBreak:"keep-all",marginBottom:6}}>지역 담당 삼촌들의 평균 경력은<br/>10~15년 이상의 베테랑들입니다.</p>
-            <p style={{fontSize:"clamp(17px,2.4vw,28px)",lineHeight:1.55,fontWeight:900,wordBreak:"keep-all"}}>트렌드와 마켓 정보를 함께 공유해 드립니다.</p>
-          </div>
-
-          {/* ② 지역 카드 — 노란색, 경력 삭제 */}
-          <div style={{display:"flex",flexDirection:"column",gap:12}}>
-            {AGENTS.map(agent=>(
-              <button key={agent.id} onClick={()=>onAgent(agent)}
-                style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"26px 32px",background:"#FEE500",border:"none",borderRadius:24,cursor:"pointer",fontFamily:"inherit",width:"100%",transition:"transform .2s, filter .2s"}}
-                onMouseEnter={e=>{e.currentTarget.style.filter="brightness(1.06)";e.currentTarget.style.transform="scale(1.01)";}}
-                onMouseLeave={e=>{e.currentTarget.style.filter="brightness(1)";e.currentTarget.style.transform="scale(1)";}}>
-                <div style={{fontSize:"clamp(20px,3vw,34px)",fontWeight:900,color:"#0a0a0a",lineHeight:1.15}}>
-                  {agent.regionLabel}
+          <div style={{background:"rgba(240,236,228,.04)",padding:"14px 16px",borderRadius:20}}>
+            <div style={{fontSize:12,fontWeight:800,color:"rgba(240,236,228,.42)",letterSpacing:".18em",textTransform:"uppercase",marginBottom:10}}>사입 진행 방식</div>
+            <div className="steps-row">
+              {STEPS.map((step,i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",flexShrink:0}}>
+                  <span style={{fontSize:"clamp(13px,3.8vw,18px)",fontWeight:900,whiteSpace:"nowrap"}}>{step}</span>
+                  {i<STEPS.length-1&&<span style={{margin:"0 7px",fontSize:11,color:"rgba(240,236,228,.32)",flexShrink:0}}>▶</span>}
                 </div>
-                <span style={{fontSize:"clamp(24px,3.8vw,40px)",fontWeight:900,color:"#0a0a0a"}}>→</span>
-              </button>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
-      </section>
+
+        {/* PR 문구 */}
+        <div style={{borderLeft:"7px solid #f0ece4",padding:"14px 24px",borderRadius:"0 20px 20px 0",background:"rgba(240,236,228,.03)"}}>
+          <p style={{fontSize:"clamp(15px,4.2vw,22px)",lineHeight:1.6,fontWeight:900,wordBreak:"keep-all",marginBottom:5}}>지역 담당 삼촌들의 평균 경력은<br/>10~15년 이상의 베테랑들입니다.</p>
+          <p style={{fontSize:"clamp(15px,4.2vw,22px)",lineHeight:1.6,fontWeight:900,wordBreak:"keep-all"}}>트렌드와 마켓 정보를 함께 공유해 드립니다.</p>
+        </div>
+
+        {/* 지역 카드 — 노란색, 지역명만 */}
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          {AGENTS.map(agent=>(
+            <button key={agent.id} onClick={()=>onAgent(agent)} className="region-btn"
+              style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"26px 28px",background:"#FEE500",border:"none",borderRadius:22,cursor:"pointer",fontFamily:"inherit",width:"100%",textAlign:"left"}}>
+              <div style={{fontSize:"clamp(18px,5.5vw,26px)",fontWeight:900,color:"#0a0a0a",lineHeight:1.2}}>
+                {agent.regionLabel}
+              </div>
+              <span style={{fontSize:"clamp(22px,6vw,30px)",fontWeight:900,color:"#0a0a0a",flexShrink:0}}>→</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* EDITORIAL */}
-      <section className="editorial-section" style={{padding:"100px 72px",borderTop:"1px solid rgba(240,236,228,.07)"}}>
-        <div style={{marginBottom:60}}>
-          <div style={{fontSize:"clamp(52px,9vw,108px)",letterSpacing:".34em",color:"rgba(240,236,228,.06)",fontWeight:900,lineHeight:1,marginBottom:-14}}>AI EDITORIAL</div>
-          <h2 style={{fontSize:"clamp(24px,4vw,50px)",fontWeight:900,position:"relative",zIndex:1}}>인플루언서 패션 AI 모델 제작</h2>
-          <div style={{fontSize:"clamp(15px,2.2vw,26px)",color:"rgba(240,236,228,.52)",letterSpacing:".14em",marginTop:12,fontWeight:800}}>L O D COLLECTION 2026</div>
+      <div style={{padding:"60px 20px",borderTop:"1px solid rgba(240,236,228,.07)"}}>
+        <div style={{marginBottom:32}}>
+          <div style={{fontSize:"clamp(44px,13vw,80px)",letterSpacing:".32em",color:"rgba(240,236,228,.06)",fontWeight:900,lineHeight:1,marginBottom:-10}}>AI EDITORIAL</div>
+          <h2 style={{fontSize:"clamp(20px,5.5vw,32px)",fontWeight:900,position:"relative",zIndex:1}}>인플루언서 패션 AI 모델 제작</h2>
+          <div style={{fontSize:"clamp(13px,3.8vw,18px)",color:"rgba(240,236,228,.5)",letterSpacing:".14em",marginTop:8,fontWeight:800}}>L O D COLLECTION 2026</div>
         </div>
-        <div className="look-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
           {LOOKS.map(look=>(
-            <div key={look.id} onClick={()=>openModal(look)}
-              style={{aspectRatio:"3/4",background:"#111",border:"1px solid rgba(240,236,228,.1)",borderRadius:24,overflow:"hidden",cursor:"pointer",position:"relative",transition:"border-color .3s"}}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(240,236,228,.28)";e.currentTarget.querySelector(".inner").style.background="#1c1c1c";e.currentTarget.querySelector(".hover-info").style.opacity="1";}}
-              onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(240,236,228,.1)";e.currentTarget.querySelector(".inner").style.background="#141414";e.currentTarget.querySelector(".hover-info").style.opacity="0";}}>
-              <div className="inner" style={{width:"100%",height:"100%",background:"#141414",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:14,transition:"background .3s"}}>
-                <div style={{width:44,height:44,border:"1px solid rgba(240,236,228,.12)",borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,color:"rgba(240,236,228,.18)"}}>+</div>
-                <span style={{fontSize:11,letterSpacing:".26em",textTransform:"uppercase",color:"rgba(240,236,228,.2)"}}>{look.label}</span>
+            <div key={look.id} onClick={()=>openModal(look)} className="look-card"
+              style={{aspectRatio:"3/4",background:"#111",border:"1px solid rgba(240,236,228,.1)",borderRadius:20,overflow:"hidden",cursor:"pointer",position:"relative"}}>
+              <div className="lc-inner" style={{width:"100%",height:"100%",background:"#141414",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12,transition:"background .3s"}}>
+                <div style={{width:40,height:40,border:"1px solid rgba(240,236,228,.12)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,color:"rgba(240,236,228,.18)"}}>+</div>
+                <span style={{fontSize:10,letterSpacing:".24em",textTransform:"uppercase",color:"rgba(240,236,228,.2)"}}>{look.label}</span>
               </div>
-              <div className="hover-info" style={{position:"absolute",bottom:0,left:0,right:0,padding:"14px",opacity:0,transition:"opacity .3s",pointerEvents:"none",background:"linear-gradient(to top,rgba(0,0,0,.72) 0%,transparent 55%)"}}>
-                <div style={{fontSize:12,fontWeight:900,letterSpacing:".2em",textTransform:"uppercase",color:"rgba(240,236,228,.9)"}}>{look.style}</div>
+              <div className="lc-info" style={{position:"absolute",bottom:0,left:0,right:0,padding:12,opacity:0,transition:"opacity .3s",pointerEvents:"none",background:"linear-gradient(to top,rgba(0,0,0,.72) 0%,transparent 55%)"}}>
+                <div style={{fontSize:11,fontWeight:900,letterSpacing:".18em",textTransform:"uppercase",color:"rgba(240,236,228,.9)"}}>{look.style}</div>
               </div>
-              <div style={{position:"absolute",top:11,left:11,fontSize:10,letterSpacing:".2em",color:"rgba(240,236,228,.22)"}}>{look.label}</div>
+              <div style={{position:"absolute",top:10,left:10,fontSize:9,letterSpacing:".2em",color:"rgba(240,236,228,.22)"}}>{look.label}</div>
             </div>
           ))}
         </div>
-      </section>
+      </div>
 
       {/* FOOTER */}
-      <footer style={{padding:"64px 40px",textAlign:"center",borderTop:"1px solid rgba(240,236,228,.07)",borderRadius:"28px 28px 0 0",background:"#0d0d0d",marginTop:14}}>
-        <svg width="48" height="48" viewBox="0 0 100 100" fill="none" style={{margin:"0 auto",display:"block"}}>
+      <footer style={{padding:"52px 20px 40px",textAlign:"center",borderTop:"1px solid rgba(240,236,228,.07)",borderRadius:"24px 24px 0 0",background:"#0d0d0d",marginTop:12}}>
+        <svg width="44" height="44" viewBox="0 0 100 100" fill="none" style={{margin:"0 auto",display:"block"}}>
           <circle cx="50" cy="50" r="46" stroke="rgba(240,236,228,.2)" strokeWidth="5" fill="none"/>
           <text x="14" y="72" fontFamily="Georgia,serif" fontWeight="900" fontSize="62" fill="rgba(240,236,228,.2)" letterSpacing="-2">LD</text>
         </svg>
-        <div style={{fontSize:18,fontWeight:900,letterSpacing:".26em",color:"rgba(240,236,228,.2)",margin:"12px 0"}}>L O D</div>
-        <p style={{fontSize:11,color:"rgba(240,236,228,.18)",letterSpacing:".12em",lineHeight:2.2}}>Layer On Drape · 동대문 새벽시장 전문 사입 서비스<br/>정확한 픽업, 꼼꼼한 검수 · 마감 AM 03:00</p>
+        <div style={{fontSize:16,fontWeight:900,letterSpacing:".26em",color:"rgba(240,236,228,.2)",margin:"10px 0"}}>L O D</div>
+        <p style={{fontSize:11,color:"rgba(240,236,228,.18)",letterSpacing:".1em",lineHeight:2.1}}>Layer On Drape · 동대문 새벽시장 전문 사입 서비스<br/>정확한 픽업, 꼼꼼한 검수 · 마감 AM 03:00</p>
       </footer>
 
       {modal&&<LookModal look={modal} idx={mIdx} total={LOOKS.length} onClose={()=>setModal(null)} onPrev={goPrev} onNext={goNext}/>}
@@ -343,110 +385,117 @@ function MainPage({onAgent,onOpenChat}){
   );
 }
 
-/* AGENT PAGE */
+/* ─── AGENT PAGE ─────────────────────────────────────────────── */
 function AgentPage({agent,onBack,onAgent}){
   useEffect(()=>{window.scrollTo({top:0});},[agent.id]);
   return(
-    <div className="fade-in" style={{background:"#0a0a0a",minHeight:"100vh"}}>
-      <div style={{maxWidth:1360,margin:"0 auto",padding:"110px 72px 0"}}>
-        <button onClick={onBack} style={{background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:8,fontSize:11,letterSpacing:".26em",color:"rgba(240,236,228,.38)",textTransform:"uppercase",padding:0,fontFamily:"inherit",marginBottom:44,transition:"color .2s"}}
+    <div className="fade-in" style={{color:"#f0ece4"}}>
+      {/* 백 버튼 */}
+      <div style={{padding:"20px 20px 0"}}>
+        <button onClick={onBack}
+          style={{background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:6,fontSize:11,letterSpacing:".26em",color:"rgba(240,236,228,.38)",textTransform:"uppercase",padding:0,fontFamily:"inherit",transition:"color .2s"}}
           onMouseEnter={e=>e.currentTarget.style.color="rgba(240,236,228,.75)"}
           onMouseLeave={e=>e.currentTarget.style.color="rgba(240,236,228,.38)"}>
-          <span style={{fontSize:17}}>←</span> Back to L O D
+          <span style={{fontSize:16}}>←</span> Back to L O D
         </button>
       </div>
-      <div className="agent-wrap" style={{display:"grid",gridTemplateColumns:"1fr 1.3fr",maxWidth:1360,margin:"0 auto",padding:"0 72px 96px",alignItems:"start"}}>
-        <div className="agent-left" style={{position:"sticky",top:96,paddingRight:72}}>
-          <VideoBox label={`${agent.regionLabel} 소개 영상`}/>
-          <div style={{marginTop:22,display:"flex",flexDirection:"column",gap:8}}>
-            <a href={agent.kakaoUrl} target="_blank" rel="noopener noreferrer"
-              style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,background:"#f0ece4",color:"#0a0a0a",padding:"18px",fontSize:14,fontWeight:900,textDecoration:"none",textTransform:"uppercase",borderRadius:50,letterSpacing:".1em",transition:"opacity .2s"}}
-              onMouseEnter={e=>e.currentTarget.style.opacity=".84"}
-              onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="#0a0a0a"><path d="M12 3C7.03 3 3 6.36 3 10.5c0 2.56 1.48 4.83 3.74 6.26l-.95 3.54 4.1-2.04c.67.1 1.37.16 2.11.16 4.97 0 9-3.36 9-7.5S16.97 3 12 3z"/></svg>
-              카카오톡 사입 문의하기
-            </a>
-            <div style={{textAlign:"center",fontSize:9,letterSpacing:".18em",color:"rgba(240,236,228,.2)",textTransform:"uppercase"}}>마감 AM 03:00</div>
-          </div>
+
+      {/* 영상 */}
+      <div style={{padding:"18px 20px 0"}}>
+        <VideoBox label={`${agent.regionLabel} 소개 영상`}/>
+      </div>
+
+      {/* 카카오 버튼 */}
+      <div style={{padding:"16px 20px 0"}}>
+        <a href={agent.kakaoUrl} target="_blank" rel="noopener noreferrer"
+          style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,background:"#f0ece4",color:"#0a0a0a",padding:"18px",fontSize:15,fontWeight:900,textDecoration:"none",textTransform:"uppercase",borderRadius:50,letterSpacing:".1em",transition:"opacity .2s"}}
+          onMouseEnter={e=>e.currentTarget.style.opacity=".84"}
+          onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#0a0a0a"><path d="M12 3C7.03 3 3 6.36 3 10.5c0 2.56 1.48 4.83 3.74 6.26l-.95 3.54 4.1-2.04c.67.1 1.37.16 2.11.16 4.97 0 9-3.36 9-7.5S16.97 3 12 3z"/></svg>
+          카카오톡 사입 문의하기
+        </a>
+        <div style={{textAlign:"center",fontSize:9,letterSpacing:".18em",color:"rgba(240,236,228,.2)",textTransform:"uppercase",marginTop:8}}>마감 AM 03:00</div>
+      </div>
+
+      {/* 에이전트 정보 */}
+      <div style={{padding:"28px 20px",display:"flex",flexDirection:"column",gap:36}}>
+        {/* 헤더 */}
+        <div>
+          <div style={{fontSize:10,letterSpacing:".32em",color:"rgba(240,236,228,.28)",textTransform:"uppercase",marginBottom:12}}>{agent.regionEn}</div>
+          <h2 style={{fontSize:"clamp(26px,8vw,44px)",fontWeight:900,lineHeight:1.1,marginBottom:10}}>{agent.regionLabel}</h2>
+          <div style={{fontSize:22,color:"rgba(240,236,228,.42)",fontWeight:600}}>{agent.career} 베테랑 팀</div>
         </div>
-        <div className="agent-right" style={{borderLeft:"1px solid rgba(240,236,228,.08)",paddingLeft:72,display:"flex",flexDirection:"column",gap:52}}>
-          <div>
-            <div style={{fontSize:10,letterSpacing:".32em",color:"rgba(240,236,228,.28)",textTransform:"uppercase",marginBottom:16}}>{agent.regionEn}</div>
-            <h2 style={{fontSize:"clamp(28px,5vw,62px)",fontWeight:900,lineHeight:1,marginBottom:12}}>{agent.regionLabel}</h2>
-            <div style={{fontSize:26,color:"rgba(240,236,228,.42)",fontWeight:600}}>{agent.career} 베테랑 팀</div>
-          </div>
-          <div>
-            <div style={{fontSize:15,letterSpacing:".28em",color:"rgba(240,236,228,.26)",textTransform:"uppercase",marginBottom:16}}>Introduction</div>
-            {agent.intro.map((line,i)=>(
-              <p key={i} style={{fontSize:i===0?"clamp(24px,3.4vw,38px)":"clamp(18px,2.4vw,28px)",lineHeight:1.7,color:i===0?"rgba(240,236,228,.88)":"rgba(240,236,228,.5)",marginBottom:12,wordBreak:"keep-all"}}>{line}</p>
-            ))}
-          </div>
-          <div>
-            <div style={{fontSize:15,letterSpacing:".28em",color:"rgba(240,236,228,.26)",textTransform:"uppercase",marginBottom:16}}>사입 안내</div>
-            {agent.rules.map((rule,i)=>(
-              <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"18px 0",borderBottom:"1px solid rgba(240,236,228,.07)"}}>
-                <span style={{fontSize:22,color:"rgba(240,236,228,.42)"}}>{rule.title}</span>
-                <span style={{fontSize:26,fontWeight:900,color:"rgba(240,236,228,.95)"}}>{rule.desc}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{borderTop:"1px solid rgba(240,236,228,.07)",paddingTop:26}}>
-            <div style={{fontSize:15,letterSpacing:".28em",color:"rgba(240,236,228,.26)",textTransform:"uppercase",marginBottom:14}}>다른 지역 담당</div>
-            {AGENTS.filter(a=>a.id!==agent.id).map(other=>(
-              <button key={other.id} onClick={()=>onAgent(other)}
-                style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",padding:"22px 26px",background:"transparent",border:"1px solid rgba(240,236,228,.12)",borderRadius:24,cursor:"pointer",fontFamily:"inherit",marginBottom:10,transition:"all .22s"}}
-                onMouseEnter={e=>{e.currentTarget.style.background="rgba(240,236,228,.06)";e.currentTarget.style.borderColor="rgba(240,236,228,.28)";}}
-                onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor="rgba(240,236,228,.12)";}}>
-                <div style={{fontSize:30,fontWeight:700,color:"rgba(240,236,228,.6)",textAlign:"left"}}>{other.regionLabel}</div>
-                <span style={{fontSize:34,color:"rgba(240,236,228,.24)"}}>→</span>
-              </button>
-            ))}
-          </div>
+
+        {/* 소개 */}
+        <div>
+          <div style={{fontSize:14,letterSpacing:".28em",color:"rgba(240,236,228,.26)",textTransform:"uppercase",marginBottom:14}}>Introduction</div>
+          {agent.intro.map((line,i)=>(
+            <p key={i} style={{fontSize:i===0?"clamp(18px,5vw,26px)":"clamp(14px,4vw,20px)",lineHeight:1.75,color:i===0?"rgba(240,236,228,.88)":"rgba(240,236,228,.5)",marginBottom:10,wordBreak:"keep-all"}}>{line}</p>
+          ))}
+        </div>
+
+        {/* 사입 안내 */}
+        <div>
+          <div style={{fontSize:14,letterSpacing:".28em",color:"rgba(240,236,228,.26)",textTransform:"uppercase",marginBottom:14}}>사입 안내</div>
+          {agent.rules.map((rule,i)=>(
+            <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"16px 0",borderBottom:"1px solid rgba(240,236,228,.07)"}}>
+              <span style={{fontSize:18,color:"rgba(240,236,228,.42)"}}>{rule.title}</span>
+              <span style={{fontSize:22,fontWeight:900,color:"rgba(240,236,228,.95)"}}>{rule.desc}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* 다른 지역 */}
+        <div style={{borderTop:"1px solid rgba(240,236,228,.07)",paddingTop:24}}>
+          <div style={{fontSize:14,letterSpacing:".28em",color:"rgba(240,236,228,.26)",textTransform:"uppercase",marginBottom:14}}>다른 지역 담당</div>
+          {AGENTS.filter(a=>a.id!==agent.id).map(other=>(
+            <button key={other.id} onClick={()=>onAgent(other)}
+              style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",padding:"20px 22px",background:"transparent",border:"1px solid rgba(240,236,228,.12)",borderRadius:20,cursor:"pointer",fontFamily:"inherit",marginBottom:10,transition:"all .22s"}}
+              onMouseEnter={e=>{e.currentTarget.style.background="rgba(240,236,228,.06)";e.currentTarget.style.borderColor="rgba(240,236,228,.28)";}}
+              onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor="rgba(240,236,228,.12)";}}>
+              <div style={{fontSize:"clamp(16px,5vw,24px)",fontWeight:700,color:"rgba(240,236,228,.6)",textAlign:"left"}}>{other.regionLabel}</div>
+              <span style={{fontSize:"clamp(20px,6vw,28px)",color:"rgba(240,236,228,.24)"}}>→</span>
+            </button>
+          ))}
         </div>
       </div>
+
+      {/* 하단 여백 */}
+      <div style={{height:40}}/>
     </div>
   );
 }
 
-/* ROOT */
+/* ─── ROOT ────────────────────────────────────────────────────── */
 function App(){
   const [page,setPage]=useState("main");
   const [agent,setAgent]=useState(null);
   const [chatOpen,setChatOpen]=useState(false);
-  const scrolled=useScrolled();
-  const isMobile=useIsMobile();
 
   const goAgent=a=>{setAgent(a);setPage("agent");window.scrollTo({top:0});};
   const goMain=()=>{setPage("main");setAgent(null);};
 
   return(
-    <>
-      {/* NAV */}
-      <nav className="nav-inner" style={{position:"fixed",top:0,left:0,right:0,zIndex:500,height:isMobile?62:88,padding:isMobile?"0 14px":"0 52px",display:"flex",alignItems:"center",justifyContent:"space-between",background:scrolled?"rgba(10,10,10,0.97)":"rgba(10,10,10,0.88)",borderBottom:scrolled?"1px solid rgba(240,236,228,0.09)":"1px solid transparent",borderRadius:"0 0 26px 26px",backdropFilter:"blur(20px)",transition:"background .35s,border-color .35s"}}>
-        {/* 로고 */}
-        <button onClick={goMain} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex",alignItems:"center",gap:12}}>
-          <svg width={isMobile?42:54} height={isMobile?42:54} viewBox="0 0 100 100" fill="none">
-            <circle cx="50" cy="50" r="46" stroke="#f0ece4" strokeWidth="5" fill="none"/>
-            <text x="14" y="72" fontFamily="Georgia,serif" fontWeight="900" fontSize="62" fill="#f0ece4" letterSpacing="-2">LD</text>
-          </svg>
-          {!isMobile&&<span className="nav-logo-text" style={{fontSize:15,fontWeight:300,color:"rgba(240,236,228,.68)",letterSpacing:".26em",textTransform:"uppercase"}}>Layer On Drape</span>}
+    /* 600px 중앙 컨테이너 */
+    <div className="app-shell">
+      {/* ── NAV — 컨테이너 안에서 sticky ── */}
+      <div className="nav-bar">
+        {/* 로고 — 1.5배 크게 */}
+        <button onClick={goMain} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex",alignItems:"center",gap:10}}>
+          <LDLogo size={58}/>
+          <span style={{fontSize:15,fontWeight:300,color:"rgba(240,236,228,.65)",letterSpacing:".24em",textTransform:"uppercase",whiteSpace:"nowrap"}}>Layer On Drape</span>
         </button>
 
-        {/* 중앙 */}
-        {page==="agent"&&agent&&!isMobile&&(
-          <span style={{fontSize:9,letterSpacing:".22em",color:"rgba(240,236,228,.3)",textTransform:"uppercase"}}>{agent.regionEn}</span>
-        )}
-
-        {/* ③ CTA 버튼 — 모바일 크게, 균형 */}
+        {/* CTA 버튼 — 1.5배 크게 */}
         <a href={MAIN_KAKAO} target="_blank" rel="noopener noreferrer"
-          style={{background:"#f0ece4",color:"#0a0a0a",padding:isMobile?"10px 18px":"12px 32px",fontSize:isMobile?13:14,fontWeight:900,textDecoration:"none",borderRadius:50,whiteSpace:"nowrap",letterSpacing:".04em",transition:"opacity .2s",flexShrink:0}}
+          style={{background:"#f0ece4",color:"#0a0a0a",padding:"13px 24px",fontSize:15,fontWeight:900,textDecoration:"none",borderRadius:50,whiteSpace:"nowrap",letterSpacing:".04em",flexShrink:0,transition:"opacity .2s"}}
           onMouseEnter={e=>e.currentTarget.style.opacity=".82"}
           onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
           사입 프로그램
         </a>
-      </nav>
+      </div>
 
-      {/* PAGE */}
+      {/* ── PAGE CONTENT ── */}
       <div className="fade-in" key={page}>
         {page==="main"
           ?<MainPage onAgent={goAgent} onOpenChat={()=>setChatOpen(true)}/>
@@ -454,23 +503,22 @@ function App(){
         }
       </div>
 
-      {/* CHAT */}
-      <AiChat open={chatOpen} onClose={()=>setChatOpen(false)} isMobile={isMobile}/>
+      {/* ── AI CHAT ── */}
+      <AiChat open={chatOpen} onClose={()=>setChatOpen(false)}/>
 
-      {/* PC 플로팅 */}
-      {!isMobile&&(
-        <button onClick={()=>setChatOpen(v=>!v)}
-          className={chatOpen?"":"float-pulse"}
-          style={{position:"fixed",bottom:30,right:chatOpen?436:26,zIndex:850,width:56,height:56,borderRadius:"50%",background:"#FEE500",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 20px rgba(254,229,0,.4)",transition:"right .35s cubic-bezier(.32,.72,0,1),transform .2s"}}
+      {/* ── 플로팅 챗 버튼 (우하단, 컨테이너 기준) ── */}
+      <div style={{position:"sticky",bottom:0,display:"flex",justifyContent:"flex-end",padding:"0 16px 20px",pointerEvents:"none",marginTop:-60}}>
+        <button onClick={()=>setChatOpen(v=>!v)} className={chatOpen?"":"float-pulse"}
+          style={{width:54,height:54,borderRadius:"50%",background:"#FEE500",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 20px rgba(254,229,0,.45)",transition:"transform .2s",pointerEvents:"auto"}}
           onMouseEnter={e=>e.currentTarget.style.transform="scale(1.1)"}
           onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}>
           {chatOpen
-            ?<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#0a0a0a" strokeWidth="2.5" strokeLinecap="round"/></svg>
-            :<svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="#0a0a0a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            ?<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#0a0a0a" strokeWidth="2.5" strokeLinecap="round"/></svg>
+            :<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="#0a0a0a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
           }
         </button>
-      )}
-    </>
+      </div>
+    </div>
   );
 }
 
@@ -478,4 +526,3 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
 </html>
-
