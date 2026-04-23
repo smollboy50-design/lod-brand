@@ -69,18 +69,24 @@
     }
     .nav-cta:hover{opacity:.82;}
 
-    /* ── 9:16 VIDEO BOX ── */
-    .vbox{
-      position:relative;
+    /* ── 9:16 VIDEO BOX — 480px 고정 중앙 ── */
+    .vbox-wrap{
+      display:flex;
+      justify-content:center;
       width:100%;
-      /* 9:16 = 패딩으로 비율 고정 */
-      padding-top:177.78%;
+    }
+    .vbox{
+      width:480px;
+      max-width:100%;
+      /* 9:16 비율: 480 × 16/9 = 853px */
+      aspect-ratio:9/16;
       background:#111;
       border-radius:22px;
       overflow:hidden;
       border:1px solid rgba(240,236,228,.1);
+      position:relative;
+      flex-shrink:0;
     }
-    /* PC: 600px 컨테이너 안에서 자동으로 9:16 — 추가 override 불필요 */
     .vbox video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
     .vbox-ph{position:absolute;inset:0;background:linear-gradient(160deg,#1d1d1d,#0d0d0d);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;}
     .vbox-circle{width:80px;height:80px;border-radius:50%;border:1px solid rgba(240,236,228,.18);display:flex;align-items:center;justify-content:center;}
@@ -171,14 +177,16 @@ function LDLogo({size=54,a=1}){
 /* ── VIDEO BOX ─────────────────────────────────────────────── */
 function VBox({url,label}){
   return(
-    <div className="vbox">
-      {url
-        ?<video src={url} autoPlay muted loop playsInline/>
-        :<div className="vbox-ph">
-           <div className="vbox-circle"><div className="vbox-tri"/></div>
-           <span className="vbox-label">{label||"VIDEO PLAY"}</span>
-         </div>
-      }
+    <div className="vbox-wrap">
+      <div className="vbox">
+        {url
+          ?<video src={url} autoPlay muted loop playsInline/>
+          :<div className="vbox-ph">
+             <div className="vbox-circle"><div className="vbox-tri"/></div>
+             <span className="vbox-label">{label||"VIDEO PLAY"}</span>
+           </div>
+        }
+      </div>
     </div>
   );
 }
