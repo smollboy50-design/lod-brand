@@ -1,0 +1,805 @@
+import { useState, useEffect, useCallback, useRef } from "react";
+
+// ─────────────────────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────────────────────
+const AGENTS = [
+  {
+    id: "seoul-north",
+    regionLabel: "강북 · 도봉 · 노원 · 중랑",
+    regionEn: "SEOUL NORTH AREA",
+    career: "18년 베테랑",
+    kakaoUrl: "https://open.kakao.com/SEOUL_NORTH",
+    videoUrl: "",
+    intro: [
+      "L O D 서울 강북권 대표 베테랑 팀입니다.",
+      "18년의 숙련된 노하우로 단순 사입 이상의 가치를 제공합니다.",
+      "트렌드와 마켓 정보를 함께 공유해 드립니다.",
+    ],
+    rules: [
+      { title: "사입 신청 마감", desc: "매일 AM 03:00" },
+      { title: "픽업 시간", desc: "오전 5:00 — 9:00" },
+      { title: "최소 수량", desc: "단품 1장부터 가능" },
+      { title: "검수 기준", desc: "오염·불량·사이즈 전수 확인" },
+      { title: "결제 방법", desc: "카카오페이 · 계좌이체" },
+    ],
+  },
+  {
+    id: "incheon-bucheon",
+    regionLabel: "인천 · 부천",
+    regionEn: "INCHEON · BUCHEON",
+    career: "20년 베테랑",
+    kakaoUrl: "https://open.kakao.com/INCHEON_BUCHEON",
+    videoUrl: "",
+    intro: [
+      "인천·부천 지역 사입의 최고 전문가 팀입니다.",
+      "20년 경력의 완벽한 픽업과 빠른 피드백을 약속드립니다.",
+      "경기권 로드샵 사장님들의 든든한 파트너가 되겠습니다.",
+    ],
+    rules: [
+      { title: "사입 신청 마감", desc: "매일 AM 02:30" },
+      { title: "픽업 시간", desc: "오전 6:00 — 10:00" },
+      { title: "최소 수량", desc: "제한 없음" },
+      { title: "검수 기준", desc: "정밀 검수 시스템 적용" },
+      { title: "결제 방법", desc: "자유 결제 시스템" },
+    ],
+  },
+];
+
+// 사입 진행 방식 — 한글만 (영문 서브 삭제)
+const STEPS = ["사입 신청", "현장 픽업", "지역별 분류", "안전 배송"];
+
+const LOOKS = Array.from({ length: 4 }, (_, i) => ({
+  id: i + 1,
+  label: `EDITORIAL ${String(i + 1).padStart(2, "0")}`,
+  imageUrl: "",
+  style: ["MINIMAL CHIC", "OVERFIT STREET", "MODERN CLASSIC", "URBAN CASUAL"][i],
+}));
+
+const MAIN_KAKAO = "https://open.kakao.com/LOD_MAIN";
+
+// ─────────────────────────────────────────────────────────────
+// LD 원형 로고 SVG (업로드된 로고 재현)
+// ─────────────────────────────────────────────────────────────
+function LDLogo({ size = 72, dark = false }) {
+  const fg = dark ? "#0a0a0a" : "#f0ece4";
+  const bg = dark ? "#f0ece4" : "transparent";
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {bg !== "transparent" && <circle cx="50" cy="50" r="50" fill={bg} />}
+      {/* 원 테두리 */}
+      <circle cx="50" cy="50" r="46" stroke={fg} strokeWidth="5" fill="none" />
+      {/* L 자 — 세리프 스타일 */}
+      <text
+        x="14" y="72"
+        fontFamily="Georgia, 'Times New Roman', serif"
+        fontWeight="900"
+        fontSize="62"
+        fill={fg}
+        letterSpacing="-2"
+      >LD</text>
+    </svg>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// HOOKS
+// ─────────────────────────────────────────────────────────────
+function useClock() {
+  const [t, setT] = useState(new Date());
+  useEffect(() => { const id = setInterval(() => setT(new Date()), 1000); return () => clearInterval(id); }, []);
+  return t.toLocaleTimeString("ko-KR", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+function useScrolled(px = 100) {
+  const [s, setS] = useState(false);
+  useEffect(() => {
+    const fn = () => setS(window.scrollY > px);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
+  }, [px]);
+  return s;
+}
+
+// ─────────────────────────────────────────────────────────────
+// VIDEO BOX
+// ─────────────────────────────────────────────────────────────
+function VideoBox({ videoUrl, label, sx = {} }) {
+  return (
+    <div style={{ position: "relative", paddingTop: "177.78%", background: "#111", borderRadius: "28px", overflow: "hidden", border: "1px solid rgba(240,236,228,0.1)", ...sx }}>
+      {videoUrl ? (
+        <video src={videoUrl} autoPlay muted loop playsInline
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+      ) : (
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(160deg,#1d1d1d 0%,#0d0d0d 100%)",
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "28px",
+        }}>
+          <div style={{
+            position: "absolute", inset: 0, opacity: 0.04,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+            backgroundSize: "150px",
+          }} />
+          <div style={{ width: "96px", height: "96px", borderRadius: "50%", border: "1px solid rgba(240,236,228,0.18)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 0, height: 0, borderTop: "14px solid transparent", borderBottom: "14px solid transparent", borderLeft: "24px solid rgba(240,236,228,0.4)", marginLeft: "8px" }} />
+          </div>
+          <div style={{ fontSize: "14px", letterSpacing: "0.4em", color: "rgba(240,236,228,0.22)", textTransform: "uppercase" }}>{label || "VIDEO PLAY"}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// LOOK CARD + MODAL
+// ─────────────────────────────────────────────────────────────
+function LookCard({ look, onClick }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      onClick={() => onClick(look)}
+      style={{
+        aspectRatio: "3/4", background: "#111",
+        border: `1px solid ${hov ? "rgba(240,236,228,0.3)" : "rgba(240,236,228,0.1)"}`,
+        cursor: "pointer", transition: "border-color 0.3s", overflow: "hidden", position: "relative",
+        borderRadius: "24px",
+      }}
+    >
+      {look.imageUrl ? (
+        <>
+          <img src={look.imageUrl} alt={look.label}
+            style={{ width: "100%", height: "100%", objectFit: "cover", transform: hov ? "scale(1.04)" : "scale(1)", transition: "transform 0.6s cubic-bezier(.25,.46,.45,.94)" }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(0,0,0,0.72) 0%,transparent 55%)", opacity: hov ? 1 : 0, transition: "opacity 0.3s" }} />
+        </>
+      ) : (
+        <div style={{ width: "100%", height: "100%", background: hov ? "#1c1c1c" : "#141414", transition: "background 0.3s", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "16px" }}>
+          <div style={{ width: "50px", height: "50px", border: "1px solid rgba(240,236,228,0.12)", borderRadius: "14px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: "22px", color: "rgba(240,236,228,0.18)", lineHeight: 1 }}>+</span>
+          </div>
+          <span style={{ fontSize: "13px", letterSpacing: "0.28em", color: "rgba(240,236,228,0.22)", textTransform: "uppercase" }}>{look.label}</span>
+        </div>
+      )}
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px", opacity: hov ? 1 : 0, transition: "opacity 0.3s", pointerEvents: "none" }}>
+        <div style={{ fontSize: "14px", fontWeight: 900, letterSpacing: "0.24em", color: "rgba(240,236,228,0.92)", textTransform: "uppercase" }}>{look.style}</div>
+      </div>
+      <div style={{ position: "absolute", top: "14px", left: "14px", fontSize: "11px", letterSpacing: "0.22em", color: "rgba(240,236,228,0.25)" }}>{look.label}</div>
+    </div>
+  );
+}
+
+function LookModal({ look, looks, onClose, onNav }) {
+  const idx = looks.findIndex(l => l.id === look.id);
+  useEffect(() => {
+    const fn = e => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft" && idx > 0) onNav(looks[idx - 1]);
+      if (e.key === "ArrowRight" && idx < looks.length - 1) onNav(looks[idx + 1]);
+    };
+    window.addEventListener("keydown", fn);
+    return () => window.removeEventListener("keydown", fn);
+  }, [look, idx]);
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 800, background: "rgba(4,4,4,0.97)", backdropFilter: "blur(16px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", animation: "fadeIn 0.2s ease" }}>
+      <button onClick={onClose} style={{ position: "fixed", top: "24px", right: "24px", background: "transparent", border: "1px solid rgba(240,236,228,0.22)", color: "rgba(240,236,228,0.6)", width: "48px", height: "48px", borderRadius: "50%", cursor: "pointer", fontSize: "26px", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 810, transition: "all 0.2s" }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(240,236,228,0.5)"; e.currentTarget.style.color = "#f0ece4"; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(240,236,228,0.22)"; e.currentTarget.style.color = "rgba(240,236,228,0.6)"; }}
+      >×</button>
+      {idx > 0 && (
+        <button onClick={e => { e.stopPropagation(); onNav(looks[idx - 1]); }} style={{ position: "fixed", left: "20px", top: "50%", transform: "translateY(-50%)", background: "transparent", border: "1px solid rgba(240,236,228,0.18)", color: "rgba(240,236,228,0.55)", width: "52px", height: "52px", borderRadius: "50%", cursor: "pointer", fontSize: "26px", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 810, transition: "all 0.2s" }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(240,236,228,0.45)"; e.currentTarget.style.color = "#f0ece4"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(240,236,228,0.18)"; e.currentTarget.style.color = "rgba(240,236,228,0.55)"; }}
+        >‹</button>
+      )}
+      {idx < looks.length - 1 && (
+        <button onClick={e => { e.stopPropagation(); onNav(looks[idx + 1]); }} style={{ position: "fixed", right: "20px", top: "50%", transform: "translateY(-50%)", background: "transparent", border: "1px solid rgba(240,236,228,0.18)", color: "rgba(240,236,228,0.55)", width: "52px", height: "52px", borderRadius: "50%", cursor: "pointer", fontSize: "26px", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 810, transition: "all 0.2s" }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(240,236,228,0.45)"; e.currentTarget.style.color = "#f0ece4"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(240,236,228,0.18)"; e.currentTarget.style.color = "rgba(240,236,228,0.55)"; }}
+        >›</button>
+      )}
+      <div onClick={e => e.stopPropagation()} style={{ width: "min(360px,78vw)", display: "flex", flexDirection: "column", gap: "18px", animation: "slideUp 0.25s ease" }}>
+        <div style={{ aspectRatio: "3/4", border: "1px solid rgba(240,236,228,0.12)", overflow: "hidden", borderRadius: "28px" }}>
+          {look.imageUrl
+            ? <img src={look.imageUrl} alt={look.label} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            : <div style={{ width: "100%", height: "100%", background: "#181818", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "14px" }}>
+                <div style={{ fontSize: "32px", letterSpacing: "0.1em", color: "rgba(240,236,228,0.15)", fontWeight: 900 }}>{look.label}</div>
+                <div style={{ fontSize: "11px", letterSpacing: "0.26em", color: "rgba(240,236,228,0.1)" }}>AI MODEL · L O D</div>
+              </div>
+          }
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+          <div>
+            <div style={{ fontSize: "15px", fontWeight: 900, letterSpacing: "0.2em", color: "rgba(240,236,228,0.78)", textTransform: "uppercase" }}>{look.style}</div>
+            <div style={{ fontSize: "11px", letterSpacing: "0.14em", color: "rgba(240,236,228,0.3)", marginTop: "4px" }}>{look.label}</div>
+          </div>
+          <div style={{ fontSize: "11px", color: "rgba(240,236,228,0.22)" }}>{idx + 1} / {looks.length}</div>
+        </div>
+        <div style={{ display: "flex", justifyContent: "center", gap: "6px" }}>
+          {looks.map((_, i) => (
+            <div key={i} onClick={e => { e.stopPropagation(); onNav(looks[i]); }}
+              style={{ width: i === idx ? "22px" : "6px", height: "6px", borderRadius: "3px", cursor: "pointer", background: i === idx ? "rgba(240,236,228,0.68)" : "rgba(240,236,228,0.18)", transition: "all 0.25s" }} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// MAIN PAGE
+// ─────────────────────────────────────────────────────────────
+function MainPage({ onSelectAgent, onOpenChat }) {
+  const [hov, setHov] = useState(null);
+  const [modal, setModal] = useState(null);
+  const clock = useClock();
+
+  return (
+    <div style={{ background: "#0a0a0a", color: "#f0ece4" }}>
+
+      {/* ── HERO ── */}
+      <section style={{ minHeight: "100vh", display: "grid", gridTemplateColumns: "1fr 1.2fr", paddingTop: "140px" }} className="hero-grid">
+
+        {/* Left: film — 더 크게 */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "32px", borderRight: "1px solid rgba(240,236,228,0.08)", background: "linear-gradient(135deg,rgba(18,18,18,0.5) 0%,transparent 100%)" }}>
+          <div style={{ width: "100%", maxWidth: "560px" }}>
+            <VideoBox label="L O D FILM" />
+          </div>
+        </div>
+
+        {/* Right: content */}
+        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "80px", gap: "40px" }}>
+
+          {/* 동대문 새벽시장 */}
+          <div style={{ textAlign: "center", padding: "10px 0" }}>
+            <div style={{
+              fontSize: "clamp(48px,6.5vw,68px)",
+              letterSpacing: "0.12em",
+              color: "#f0ece4",
+              fontWeight: 900,
+              lineHeight: 1.25,
+              wordBreak: "keep-all",
+            }}>
+              동대문 새벽시장<br />전문 사입 서비스
+            </div>
+          </div>
+
+          {/* ── AI 챗 버튼 ── */}
+          <button
+            onClick={onOpenChat}
+            style={{
+              width: "100%", padding: "28px 28px",
+              background: "#FEE500", color: "#0a0a0a",
+              border: "none", borderRadius: "24px",
+              cursor: "pointer", textAlign: "center",
+              fontSize: "clamp(20px,2.6vw,28px)", fontWeight: 900,
+              letterSpacing: "0.04em", lineHeight: 1.4,
+              animation: "pulse 2.2s ease-in-out infinite",
+              transition: "transform 0.2s, opacity 0.2s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.02)"; e.currentTarget.style.animationPlayState = "paused"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.animationPlayState = "running"; }}
+          >
+            💬 사입에 대해 무엇이든 물어보세요<br />
+            <span style={{ display: "block", textAlign: "center", marginTop: "6px" }}>24시 AI 챗!!</span>
+          </button>
+
+          {/* 시계 + 사입 진행 방식 */}
+          <div style={{ borderTop: "3px solid rgba(240,236,228,0.18)", borderBottom: "3px solid rgba(240,236,228,0.18)", padding: "28px 0" }}>
+
+            {/* 시계 — 중앙 정렬 */}
+            <div style={{ textAlign: "center", marginBottom: "24px" }}>
+              <div style={{ fontSize: "14px", letterSpacing: "0.36em", color: "rgba(240,236,228,0.38)", textTransform: "uppercase", marginBottom: "10px", fontWeight: 700 }}>
+                CURRENT MARKET TIME
+              </div>
+              <div style={{ fontSize: "clamp(40px,6vw,72px)", fontFamily: "monospace", fontWeight: 800, letterSpacing: "0.04em", lineHeight: 1, color: "#f0ece4" }}>
+                {clock}
+              </div>
+            </div>
+
+            {/* 사입 진행 방식 — 글자 줄이고 한 줄 */}
+            <div style={{ background: "rgba(240,236,228,0.04)", padding: "18px 22px", borderRadius: "24px" }}>
+              <div style={{ fontSize: "16px", fontWeight: 800, color: "rgba(240,236,228,0.45)", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "14px" }}>
+                사입 진행 방식
+              </div>
+              <div style={{ display: "flex", alignItems: "center", overflowX: "auto", paddingBottom: "2px" }}>
+                {STEPS.map((step, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+                    <span style={{
+                      fontSize: "clamp(18px,2.4vw,28px)",
+                      fontWeight: 900,
+                      color: "#f0ece4",
+                      whiteSpace: "nowrap",
+                    }}>{step}</span>
+                    {i < STEPS.length - 1 && (
+                      <span style={{ margin: "0 10px", fontSize: "16px", color: "rgba(240,236,228,0.35)", flexShrink: 0 }}>▶</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* PR 문구 */}
+          <div style={{ borderLeft: "10px solid #f0ece4", padding: "20px 40px", borderRadius: "0 24px 24px 0", background: "rgba(240,236,228,0.03)" }}>
+            <p style={{ fontSize: "clamp(22px,3vw,38px)", lineHeight: 1.5, color: "#f0ece4", fontWeight: 900, wordBreak: "keep-all", margin: "0 0 8px" }}>
+              지역 담당 삼촌들의 평균 경력은<br />10~15년 이상의 베테랑들입니다.
+            </p>
+            <p style={{ fontSize: "clamp(22px,3vw,38px)", lineHeight: 1.5, color: "#f0ece4", fontWeight: 900, wordBreak: "keep-all", margin: 0 }}>
+              트렌드와 마켓 정보를 함께 공유해 드립니다.
+            </p>
+          </div>
+
+          {/* 지역 버튼 */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            {AGENTS.map(agent => (
+              <button key={agent.id}
+                onMouseEnter={() => setHov(agent.id)}
+                onMouseLeave={() => setHov(null)}
+                onClick={() => onSelectAgent(agent)}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "36px 44px",
+                  background: hov === agent.id ? "rgba(240,236,228,0.08)" : "transparent",
+                  border: `1px solid ${hov === agent.id ? "rgba(240,236,228,0.38)" : "rgba(240,236,228,0.22)"}`,
+                  borderRadius: "24px",
+                  cursor: "pointer", textAlign: "left", transition: "all 0.28s ease",
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: "clamp(28px,4vw,46px)", color: "#f0ece4", fontWeight: 900, lineHeight: 1.1 }}>{agent.regionLabel}</div>
+                  <div style={{ fontSize: "clamp(14px,1.8vw,22px)", color: "rgba(240,236,228,0.52)", marginTop: "8px", fontWeight: 600 }}>{agent.career} 전문가 팀</div>
+                </div>
+                <div style={{ fontSize: "clamp(32px,5vw,56px)", color: "rgba(240,236,228,0.3)", transform: hov === agent.id ? "translateX(10px)" : "translateX(0)", transition: "transform 0.28s ease" }}>→</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ③ 티커 삭제 — 없음 */}
+
+      {/* ── EDITORIAL ── */}
+      <section style={{ padding: "160px 80px", borderTop: "1px solid rgba(240,236,228,0.07)" }}>
+        {/* ④ L O D COLLECTION 2026 더 크게 */}
+        <div style={{ marginBottom: "72px" }}>
+          <div style={{ fontSize: "clamp(70px,12vw,130px)", letterSpacing: "0.38em", color: "rgba(240,236,228,0.07)", fontWeight: 900, lineHeight: 1, marginBottom: "-20px" }}>
+            AI EDITORIAL
+          </div>
+          <h2 style={{ fontSize: "clamp(32px,5vw,66px)", color: "#f0ece4", margin: 0, fontWeight: 900, letterSpacing: "-0.01em", position: "relative", zIndex: 1 }}>
+            인플루언서 패션 AI 모델 제작
+          </h2>
+          <div style={{
+            fontSize: "clamp(22px,3vw,38px)",
+            color: "rgba(240,236,228,0.55)",
+            letterSpacing: "0.16em",
+            marginTop: "18px",
+            fontWeight: 800,
+          }}>
+            L O D COLLECTION 2026
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "16px" }} className="look-grid">
+          {LOOKS.map(look => <LookCard key={look.id} look={look} onClick={setModal} />)}
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer style={{ padding: "80px", textAlign: "center", borderTop: "1px solid rgba(240,236,228,0.07)", borderRadius: "32px 32px 0 0", background: "#0d0d0d", marginTop: "20px" }}>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
+          <LDLogo size={56} dark={false} />
+        </div>
+        <div style={{ fontSize: "28px", fontWeight: 900, letterSpacing: "0.28em", color: "rgba(240,236,228,0.2)", marginBottom: "20px" }}>L O D</div>
+        <p style={{ fontSize: "12px", color: "rgba(240,236,228,0.18)", letterSpacing: "0.14em", lineHeight: 2.2 }}>
+          Layer On Drape · 동대문 새벽시장 전문 사입 서비스<br />
+          정확한 픽업, 꼼꼼한 검수 · 마감 AM 03:00
+        </p>
+      </footer>
+
+      {modal && <LookModal look={modal} looks={LOOKS} onClose={() => setModal(null)} onNav={setModal} />}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// AGENT PAGE
+// ─────────────────────────────────────────────────────────────
+function AgentPage({ agent, onBack, onSelectAgent }) {
+  const [vis, setVis] = useState(false);
+  useEffect(() => { requestAnimationFrame(() => setVis(true)); window.scrollTo({ top: 0 }); }, [agent.id]);
+
+  return (
+    <div style={{ opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(20px)", transition: "opacity 0.45s ease, transform 0.45s ease", background: "#0a0a0a", minHeight: "100vh" }}>
+      <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "160px 80px 0" }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", fontSize: "12px", letterSpacing: "0.28em", color: "rgba(240,236,228,0.38)", textTransform: "uppercase", padding: 0, marginBottom: "60px", transition: "color 0.2s" }}
+          onMouseEnter={e => e.currentTarget.style.color = "rgba(240,236,228,0.78)"}
+          onMouseLeave={e => e.currentTarget.style.color = "rgba(240,236,228,0.38)"}
+        >
+          <span style={{ fontSize: "20px" }}>←</span> Back to L O D
+        </button>
+      </div>
+
+      <section style={{ display: "grid", gridTemplateColumns: "1fr 1.3fr", gap: 0, maxWidth: "1400px", margin: "0 auto", padding: "0 80px 120px", alignItems: "start" }} className="agent-grid">
+        {/* Left */}
+        <div style={{ position: "sticky", top: "160px", paddingRight: "80px" }}>
+          <VideoBox videoUrl={agent.videoUrl} label={`${agent.regionLabel} 소개 영상`} />
+          <div style={{ marginTop: "28px", display: "flex", flexDirection: "column", gap: "10px" }}>
+            <a href={agent.kakaoUrl} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", background: "#f0ece4", color: "#0a0a0a", padding: "22px", fontSize: "16px", fontWeight: 900, letterSpacing: "0.12em", textDecoration: "none", textTransform: "uppercase", transition: "opacity 0.2s", borderRadius: "50px" }}
+              onMouseEnter={e => e.currentTarget.style.opacity = "0.84"}
+              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#0a0a0a"><path d="M12 3C7.03 3 3 6.36 3 10.5c0 2.56 1.48 4.83 3.74 6.26l-.95 3.54 4.1-2.04c.67.1 1.37.16 2.11.16 4.97 0 9-3.36 9-7.5S16.97 3 12 3z" /></svg>
+              카카오톡 사입 문의하기
+            </a>
+            <div style={{ textAlign: "center", fontSize: "10px", letterSpacing: "0.2em", color: "rgba(240,236,228,0.22)", textTransform: "uppercase" }}>마감 AM 03:00</div>
+          </div>
+        </div>
+
+        {/* Right */}
+        <div style={{ borderLeft: "1px solid rgba(240,236,228,0.08)", paddingLeft: "80px", display: "flex", flexDirection: "column", gap: "64px" }}>
+
+          {/* 헤더 */}
+          <div>
+            <div style={{ fontSize: "12px", letterSpacing: "0.34em", color: "rgba(240,236,228,0.28)", textTransform: "uppercase", marginBottom: "22px" }}>{agent.regionEn}</div>
+            <h2 style={{ fontWeight: 900, fontSize: "clamp(36px,6vw,80px)", color: "#f0ece4", margin: "0 0 14px", lineHeight: 1 }}>{agent.regionLabel}</h2>
+            <div style={{ fontSize: "36px", color: "rgba(240,236,228,0.44)", letterSpacing: "0.08em", fontWeight: 600 }}>{agent.career} 베테랑 팀</div>
+          </div>
+
+          {/* Introduction — 2배 크게 */}
+          <div>
+            <div style={{ fontSize: "22px", letterSpacing: "0.3em", color: "rgba(240,236,228,0.26)", textTransform: "uppercase", marginBottom: "22px" }}>Introduction</div>
+            {agent.intro.map((line, i) => (
+              <p key={i} style={{
+                fontSize: i === 0 ? "clamp(36px,4.4vw,52px)" : "clamp(28px,3.2vw,36px)",
+                lineHeight: 1.7,
+                color: i === 0 ? "rgba(240,236,228,0.88)" : "rgba(240,236,228,0.52)",
+                margin: "0 0 16px",
+                wordBreak: "keep-all",
+              }}>{line}</p>
+            ))}
+          </div>
+
+          {/* 사입 안내 — 2배 크게, 결제방법 제외 */}
+          <div>
+            <div style={{ fontSize: "22px", letterSpacing: "0.3em", color: "rgba(240,236,228,0.26)", textTransform: "uppercase", marginBottom: "22px" }}>사입 안내</div>
+            {agent.rules.filter(r => r.title === "사입 신청 마감").map((rule, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "22px 0", borderBottom: "1px solid rgba(240,236,228,0.07)" }}>
+                <span style={{ fontSize: "28px", letterSpacing: "0.06em", color: "rgba(240,236,228,0.42)" }}>{rule.title}</span>
+                <span style={{ fontSize: "32px", letterSpacing: "0.04em", color: rule.title === "사입 신청 마감" ? "rgba(240,236,228,0.95)" : "rgba(240,236,228,0.7)", fontWeight: rule.title === "사입 신청 마감" ? 900 : 400 }}>{rule.desc}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* 다른 지역 담당 — 3배 크게 */}
+          <div style={{ borderTop: "1px solid rgba(240,236,228,0.07)", paddingTop: "30px" }}>
+            <div style={{ fontSize: "33px", letterSpacing: "0.22em", color: "rgba(240,236,228,0.24)", textTransform: "uppercase", marginBottom: "24px" }}>다른 지역 담당</div>
+            {AGENTS.filter(a => a.id !== agent.id).map(other => (
+              <button key={other.id} onClick={() => onSelectAgent(other)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "28px 32px", background: "transparent", border: "1px solid rgba(240,236,228,0.12)", borderRadius: "24px", cursor: "pointer", transition: "all 0.22s", marginBottom: "10px" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(240,236,228,0.06)"; e.currentTarget.style.borderColor = "rgba(240,236,228,0.28)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(240,236,228,0.12)"; }}
+              >
+                <div>
+                  <div style={{ fontSize: "42px", fontWeight: 700, color: "rgba(240,236,228,0.62)", textAlign: "left" }}>{other.regionLabel}</div>
+                  <div style={{ fontSize: "36px", color: "rgba(240,236,228,0.3)", marginTop: "6px" }}>{other.career}</div>
+                </div>
+                <span style={{ fontSize: "48px", color: "rgba(240,236,228,0.26)" }}>→</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// AI CHAT
+// ─────────────────────────────────────────────────────────────
+const SYSTEM_PROMPT = `당신은 동대문 새벽시장 전문 사입 서비스 'L O D (Layer On Drape)'의 24시간 AI 비서입니다.
+사입(대신 구매) 서비스, 동대문 시장, 패션 트렌드, 배송, 검수, 결제 방법에 대해 친절하고 전문적으로 답변하세요.
+담당 지역: 서울 강북권(강북·도봉·노원·중랑, 18년 경력), 인천·부천(20년 경력).
+사입 마감: 매일 AM 03:00. 카카오페이·계좌이체 가능. 단품 1장부터 접수 가능.
+답변은 간결하게 2-4문장으로, 한국어로만 답변하세요.`;
+
+function AiChat({ open, onClose }) {
+  const [msgs, setMsgs] = useState([
+    { role: "assistant", content: "안녕하세요! L O D AI 비서입니다 😊\n사입에 대해 궁금한 것을 무엇이든 물어보세요!" }
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const bottomRef = useRef(null);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+      setTimeout(() => inputRef.current?.focus(), 300);
+    }
+  }, [open, msgs]);
+
+  const send = async () => {
+    const text = input.trim();
+    if (!text || loading) return;
+    const newMsgs = [...msgs, { role: "user", content: text }];
+    setMsgs(newMsgs);
+    setInput("");
+    setLoading(true);
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system: SYSTEM_PROMPT,
+          messages: newMsgs.map(m => ({ role: m.role, content: m.content })),
+        }),
+      });
+      const data = await res.json();
+      const reply = data.content?.[0]?.text || "죄송합니다, 잠시 후 다시 시도해 주세요.";
+      setMsgs(prev => [...prev, { role: "assistant", content: reply }]);
+    } catch {
+      setMsgs(prev => [...prev, { role: "assistant", content: "연결에 문제가 생겼어요. 잠시 후 다시 시도해 주세요." }]);
+    }
+    setLoading(false);
+  };
+
+  const onKey = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } };
+
+  // ── 모바일: 하단 슬라이드업 / PC: 우측하단 고정창
+  const chatStyle = isMobile ? {
+    position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 900,
+    height: "82vh",
+    background: "#111",
+    borderRadius: "28px 28px 0 0",
+    border: "1px solid rgba(240,236,228,0.15)",
+    display: "flex", flexDirection: "column",
+    transform: open ? "translateY(0)" : "translateY(100%)",
+    transition: "transform 0.4s cubic-bezier(.32,.72,0,1)",
+    boxShadow: "0 -8px 48px rgba(0,0,0,0.7)",
+  } : {
+    position: "fixed", bottom: "32px", right: "32px", zIndex: 900,
+    width: "400px", height: "580px",
+    background: "#111",
+    borderRadius: "28px",
+    border: "1px solid rgba(240,236,228,0.15)",
+    display: "flex", flexDirection: "column",
+    opacity: open ? 1 : 0,
+    pointerEvents: open ? "auto" : "none",
+    transform: open ? "translateY(0) scale(1)" : "translateY(16px) scale(0.97)",
+    transition: "opacity 0.3s ease, transform 0.3s cubic-bezier(.32,.72,0,1)",
+    boxShadow: "0 8px 48px rgba(0,0,0,0.7)",
+  };
+
+  return (
+    <>
+      {/* 모바일 딤 배경 */}
+      {isMobile && (
+        <div onClick={onClose} style={{
+          position: "fixed", inset: 0, zIndex: 899,
+          background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
+          opacity: open ? 1 : 0, pointerEvents: open ? "auto" : "none",
+          transition: "opacity 0.35s",
+        }} />
+      )}
+
+      <div style={chatStyle}>
+        {/* 헤더 */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "18px 22px 14px",
+          borderBottom: "1px solid rgba(240,236,228,0.1)",
+          flexShrink: 0,
+        }}>
+          {/* 모바일 드래그 핸들 */}
+          {isMobile && (
+            <div style={{ position: "absolute", top: "10px", left: "50%", transform: "translateX(-50%)", width: "40px", height: "4px", borderRadius: "2px", background: "rgba(240,236,228,0.25)" }} />
+          )}
+          <div>
+            <div style={{ fontSize: "15px", fontWeight: 700, color: "#f0ece4", letterSpacing: "0.06em" }}>L O D AI 비서</div>
+            <div style={{ fontSize: "11px", color: "#FEE500", letterSpacing: "0.08em", marginTop: "2px" }}>● 24시간 응대</div>
+          </div>
+          <button onClick={onClose} style={{
+            background: "rgba(240,236,228,0.08)", border: "none", cursor: "pointer",
+            width: "32px", height: "32px", borderRadius: "50%",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "18px", color: "rgba(240,236,228,0.6)", transition: "background 0.2s",
+          }}
+            onMouseEnter={e => e.currentTarget.style.background = "rgba(240,236,228,0.16)"}
+            onMouseLeave={e => e.currentTarget.style.background = "rgba(240,236,228,0.08)"}
+          >×</button>
+        </div>
+
+        {/* 메시지 영역 */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "16px 18px", display: "flex", flexDirection: "column", gap: "12px" }}>
+          {msgs.map((msg, i) => (
+            <div key={i} style={{
+              display: "flex",
+              justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
+            }}>
+              <div style={{
+                maxWidth: "82%",
+                padding: "12px 16px",
+                borderRadius: msg.role === "user" ? "20px 20px 6px 20px" : "20px 20px 20px 6px",
+                background: msg.role === "user" ? "#FEE500" : "rgba(240,236,228,0.08)",
+                color: msg.role === "user" ? "#0a0a0a" : "#f0ece4",
+                fontSize: "14px", lineHeight: 1.65,
+                whiteSpace: "pre-wrap", wordBreak: "keep-all",
+                fontWeight: msg.role === "user" ? 600 : 400,
+              }}>
+                {msg.content}
+              </div>
+            </div>
+          ))}
+          {loading && (
+            <div style={{ display: "flex", justifyContent: "flex-start" }}>
+              <div style={{ padding: "12px 18px", borderRadius: "20px 20px 20px 6px", background: "rgba(240,236,228,0.08)", display: "flex", gap: "5px", alignItems: "center" }}>
+                {[0,1,2].map(i => (
+                  <div key={i} style={{ width: "7px", height: "7px", borderRadius: "50%", background: "rgba(240,236,228,0.45)", animation: `dotBounce 1.2s ease-in-out ${i*0.2}s infinite` }} />
+                ))}
+              </div>
+            </div>
+          )}
+          <div ref={bottomRef} />
+        </div>
+
+        {/* 입력창 */}
+        <div style={{
+          padding: "12px 16px 16px",
+          borderTop: "1px solid rgba(240,236,228,0.1)",
+          display: "flex", gap: "10px", alignItems: "flex-end",
+          flexShrink: 0,
+        }}>
+          <textarea
+            ref={inputRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={onKey}
+            placeholder="사입에 대해 무엇이든 물어보세요..."
+            rows={1}
+            style={{
+              flex: 1, background: "rgba(240,236,228,0.07)",
+              border: "1px solid rgba(240,236,228,0.15)",
+              borderRadius: "18px", padding: "12px 16px",
+              fontSize: "14px", color: "#f0ece4",
+              resize: "none", outline: "none",
+              fontFamily: "inherit", lineHeight: 1.5,
+              maxHeight: "100px", overflowY: "auto",
+            }}
+          />
+          <button onClick={send} disabled={loading || !input.trim()} style={{
+            width: "44px", height: "44px", borderRadius: "50%",
+            background: input.trim() && !loading ? "#FEE500" : "rgba(240,236,228,0.1)",
+            border: "none", cursor: input.trim() && !loading ? "pointer" : "default",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "background 0.2s", flexShrink: 0,
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M22 2L11 13" stroke={input.trim() && !loading ? "#0a0a0a" : "rgba(240,236,228,0.3)"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke={input.trim() && !loading ? "#0a0a0a" : "rgba(240,236,228,0.3)"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// ROOT
+// ─────────────────────────────────────────────────────────────
+export default function LOD() {
+  const [page, setPage] = useState("main");
+  const [activeAgent, setActiveAgent] = useState(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const scrolled = useScrolled(100);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  const goAgent = useCallback((agent) => { setActiveAgent(agent); setPage("agent"); window.scrollTo({ top: 0 }); }, []);
+  const goMain = useCallback(() => { setPage("main"); setActiveAgent(null); }, []);
+
+  return (
+    <div style={{ minHeight: "100vh", fontFamily: "'Pretendard','Noto Sans KR',sans-serif", background: "#0a0a0a", overflowX: "hidden" }}>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+      <style>{`
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        @keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(254,229,0,0.55); } 60% { box-shadow: 0 0 0 14px rgba(254,229,0,0); } }
+        @keyframes dotBounce { 0%,80%,100% { transform: scale(0.6); opacity:0.4; } 40% { transform: scale(1); opacity:1; } }
+        @media (max-width: 900px) {
+          .hero-grid  { grid-template-columns: 1fr !important; }
+          .hero-grid > div:first-child { padding: 32px !important; border-right: none !important; border-bottom: 1px solid rgba(240,236,228,0.08); }
+          .hero-grid > div:last-child  { padding: 32px !important; }
+          .agent-grid { grid-template-columns: 1fr !important; padding: 32px !important; }
+          .agent-grid > div:first-child { position: static !important; padding-right: 0 !important; padding-bottom: 40px; }
+          .agent-grid > div:last-child  { border-left: none !important; padding-left: 0 !important; border-top: 1px solid rgba(240,236,228,0.08); padding-top: 40px !important; }
+          .look-grid { grid-template-columns: repeat(2,1fr) !important; }
+          .nav-cta { padding: 10px 18px !important; font-size: 13px !important; letter-spacing: 0.04em !important; writing-mode: horizontal-tb !important; white-space: nowrap !important; }
+          nav { height: 72px !important; padding: 0 20px !important; }
+        }
+      `}</style>
+
+      {/* ── NAV ── */}
+      <nav style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 500,
+        height: "100px", padding: "0 60px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        background: scrolled ? "rgba(10,10,10,0.97)" : "rgba(10,10,10,0.88)",
+        borderBottom: `1px solid ${scrolled ? "rgba(240,236,228,0.09)" : "transparent"}`,
+        borderRadius: "0 0 32px 32px",
+        backdropFilter: "blur(20px)", transition: "background 0.35s, border-color 0.35s",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+          <button onClick={goMain} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center" }}>
+            <LDLogo size={68} dark={false} />
+          </button>
+          <button onClick={goMain} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", fontWeight: 300, color: "rgba(240,236,228,0.7)", letterSpacing: "0.28em", padding: 0, transition: "opacity 0.2s", textTransform: "uppercase" }}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.5"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+          >Layer On Drape</button>
+        </div>
+
+        {page === "agent" && activeAgent && (
+          <div style={{ fontSize: "10px", letterSpacing: "0.22em", color: "rgba(240,236,228,0.32)", textTransform: "uppercase" }}>{activeAgent.regionEn}</div>
+        )}
+
+        <a href={MAIN_KAKAO} target="_blank" rel="noopener noreferrer" className="nav-cta" style={{ background: "#f0ece4", color: "#0a0a0a", padding: "16px 44px", fontSize: "18px", fontWeight: 900, textDecoration: "none", letterSpacing: "0.06em", transition: "opacity 0.2s", borderRadius: "50px", whiteSpace: "nowrap" }}
+          onMouseEnter={e => e.currentTarget.style.opacity = "0.82"}
+          onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+        >사입 프로그램</a>
+      </nav>
+
+      {/* ── PAGE ── */}
+      <div style={{ animation: "fadeIn 0.35s ease" }} key={page}>
+        {page === "main"
+          ? <MainPage onSelectAgent={goAgent} onOpenChat={() => setChatOpen(true)} />
+          : <AgentPage agent={activeAgent} onBack={goMain} onSelectAgent={goAgent} />
+        }
+      </div>
+
+      {/* ── AI CHAT ── */}
+      <AiChat open={chatOpen} onClose={() => setChatOpen(false)} />
+
+      {/* ── PC 플로팅 버튼 (모바일에선 숨김) ── */}
+      {!isMobile && (
+        <button
+          onClick={() => setChatOpen(v => !v)}
+          style={{
+            position: "fixed", bottom: "32px", right: chatOpen ? "448px" : "32px",
+            zIndex: 850, width: "60px", height: "60px", borderRadius: "50%",
+            background: "#FEE500", border: "none", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 4px 20px rgba(254,229,0,0.4)",
+            animation: chatOpen ? "none" : "pulse 2s ease-in-out infinite",
+            transition: "right 0.35s cubic-bezier(.32,.72,0,1), transform 0.2s",
+          }}
+          onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"}
+          onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+          title="AI 비서 열기"
+        >
+          {chatOpen
+            ? <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#0a0a0a" strokeWidth="2.5" strokeLinecap="round"/></svg>
+            : <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="#0a0a0a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          }
+        </button>
+      )}
+    </div>
+  );
+}
