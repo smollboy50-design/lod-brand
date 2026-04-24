@@ -69,23 +69,23 @@
     }
     .nav-cta:hover{opacity:.82;}
 
-    /* ── 9:16 VIDEO BOX — 480px 고정 중앙 ── */
+    /* ── VIDEO BOX — 타이틀 폭에 맞춤 (JS로 동적 적용) ── */
     .vbox-wrap{
       display:flex;
       justify-content:center;
       width:100%;
     }
     .vbox{
-      width:480px;
+      /* 기본값: JS가 측정 전까지 임시 */
+      width:100%;
       max-width:100%;
-      /* 9:16 비율: 480 × 16/9 = 853px */
       aspect-ratio:9/16;
       background:#111;
       border-radius:22px;
       overflow:hidden;
       border:1px solid rgba(240,236,228,.1);
       position:relative;
-      flex-shrink:0;
+      transition:width .1s;
     }
     .vbox video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
     .vbox-ph{position:absolute;inset:0;background:linear-gradient(160deg,#1d1d1d,#0d0d0d);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;}
@@ -175,9 +175,32 @@ function LDLogo({size=54,a=1}){
 }
 
 /* ── VIDEO BOX ─────────────────────────────────────────────── */
-function VBox({url,label}){
+function VBox({url,label,titleRef}){
+  const wrapRef = useRef(null);
+
+  useEffect(()=>{
+    const apply = () => {
+      if(titleRef?.current && wrapRef.current){
+        // 타이틀 텍스트의 실제 렌더링 폭을 측정
+        const titleW = titleRef.current.getBoundingClientRect().width;
+        const box = wrapRef.current.querySelector(".vbox");
+        if(box && titleW > 0){
+          box.style.width = titleW + "px";
+        }
+      }
+    };
+    // 렌더 직후 + 폰트 로드 후 + 리사이즈 시 재측정
+    apply();
+    const ro = new ResizeObserver(apply);
+    if(titleRef?.current) ro.observe(titleRef.current);
+    window.addEventListener("resize", apply);
+    // 폰트 로드 완료 후 재측정
+    if(document.fonts) document.fonts.ready.then(apply);
+    return () => { ro.disconnect(); window.removeEventListener("resize", apply); };
+  }, [titleRef]);
+
   return(
-    <div className="vbox-wrap">
+    <div className="vbox-wrap" ref={wrapRef}>
       <div className="vbox">
         {url
           ?<video src={url} autoPlay muted loop playsInline/>
@@ -310,22 +333,30 @@ function Main({onAgent,onChat}){
   const clock=useClock();
   const [modal,setModal]=useState(null);
   const [mIdx,setMIdx]=useState(0);
+  const titleRef = useRef(null);  // 타이틀 폭 측정용
   const openM=l=>{setModal(l);setMIdx(LOOKS.findIndex(x=>x.id===l.id));};
   const prev=()=>{if(mIdx>0){const i=mIdx-1;setMIdx(i);setModal(LOOKS[i]);}};
   const next=()=>{if(mIdx<LOOKS.length-1){const i=mIdx+1;setMIdx(i);setModal(LOOKS[i]);}};
 
   return(
     <div>
-      {/* ── [1순위] 타이틀 ── */}
+      {/* ── [1순위] 타이틀 — ref로 폭 측정 ── */}
       <div style={{padding:"24px 20px 16px",textAlign:"center"}}>
-        <div style={{fontSize:"clamp(28px,7.5vw,44px)",fontWeight:900,letterSpacing:".1em",lineHeight:1.28,wordBreak:"keep-all"}}>
+        <div ref={titleRef} style={{
+          fontSize:"clamp(28px,7.5vw,44px)",
+          fontWeight:900,
+          letterSpacing:".1em",
+          lineHeight:1.28,
+          wordBreak:"keep-all",
+          display:"inline-block", /* 텍스트 실제 폭만 차지하게 */
+        }}>
           동대문 새벽시장<br/>전문 사입 서비스
         </div>
       </div>
 
-      {/* ── [2순위] 9:16 메인 영상 ── */}
+      {/* ── [2순위] 9:16 메인 영상 — 타이틀 폭에 정렬 ── */}
       <div style={{padding:"0 20px"}}>
-        <VBox label="L O D FILM"/>
+        <VBox label="L O D FILM" titleRef={titleRef}/>
       </div>
 
       {/* ── [3순위] AI 챗 배너 — 흰색, 중앙 60% ── */}
