@@ -112,12 +112,14 @@ const {useState,useEffect,useRef,useCallback} = React;
       인천팀 이름       | JUNE 삼촌
       인천팀 소개       | 20년 경력 베테랑입니다.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-const DEFAULT_SHEET_ID = ""; // ← 여기에 시트 ID 입력
+const CLOUDINARY_CLOUD = "ddjdyn0yj";
+const CLOUDINARY_PRESET = "lod_unsigned";
+const DEFAULT_SHEET_ID = "";
 
 /* ── 기본값 (시트 미연동 시 사용) ─────────────── */
 const DEFAULTS = {
   "홈페이지 제목":    "동대문 새벽시장\n전문 사입 서비스",
-  "메인 영상 URL":    "",
+  "메인 영상 URL":    "1777153896200_0418_1_.mp4",
   "공지사항":         "",
   "강북팀 이름":      "강북·도봉·노원·중랑",
   "강북팀 소개":      "L O D 서울 강북권 대표 베테랑 팀입니다.\n18년의 숙련된 노하우로 단순 사입 이상의 가치를 제공합니다.\n트렌드와 마켓 정보를 함께 공유해 드립니다.",
@@ -198,9 +200,11 @@ function LDLogo({size=54,a=1}){
 
 /* ── 영상 박스 (타이틀 폭 자동 맞춤 + 하이브리드 업로드) ── */
 function VideoBox({videoUrl, titleRef}){
-  const boxRef   = useRef(null);
-  const fileRef  = useRef(null);
-  const [localSrc, setLocalSrc] = useState(null); // 임시 로컬 파일
+  const boxRef  = useRef(null);
+  const fileRef = useRef(null);
+  const [src, setSrc]         = useState(videoUrl||"");
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress]   = useState(0);
 
   /* 타이틀 폭 측정 → 영상 박스 가로폭 동기화 */
   useEffect(()=>{
@@ -217,33 +221,70 @@ function VideoBox({videoUrl, titleRef}){
     return()=>{ro.disconnect();window.removeEventListener("resize",sync);};
   },[titleRef]);
 
-  /* 클릭 → 파일 선택 → 임시 재생 */
-  const handleClick=()=>fileRef.current?.click();
-  const handleFile=e=>{
-    const f=e.target.files[0];
-    if(!f)return;
-    const url=URL.createObjectURL(f);
-    setLocalSrc(url);
-  };
+  useEffect(()=>{ if(videoUrl) setSrc(videoUrl); },[videoUrl]);
 
-  const src = localSrc || videoUrl || null;
+  /* Cloudinary 업로드 */
+  const handleFile = async(e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    setUploading(true); setProgress(0);
+    try{
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("upload_preset", CLOUDINARY_PRESET);
+
+      const xhr = new XMLHttpRequest();
+      xhr.upload.onprogress = ev=>{
+        if(ev.lengthComputable) setProgress(Math.round(ev.loaded/ev.total*100));
+      };
+      xhr.onload = ()=>{
+        const res = JSON.parse(xhr.responseText);
+        if(res.secure_url){
+          setSrc(res.secure_url);
+          alert("✅ 업로드 완료!\n구글 시트 '메인 영상 URL' 칸에 이 주소를 붙여넣으면 영구 저장됩니다:\n\n"+res.secure_url);
+        }else{
+          alert("업로드 실패: "+JSON.stringify(res));
+        }
+        setUploading(false);
+      };
+      xhr.onerror = ()=>{ alert("업로드 오류가 발생했습니다."); setUploading(false); };
+      xhr.open("POST",`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`);
+      xhr.send(fd);
+    }catch(err){
+      alert("오류: "+err.message);
+      setUploading(false);
+    }
+  };
 
   return(
     <div className="vbox-outer">
-      <div className="vbox" ref={boxRef} onClick={handleClick} title="클릭하면 영상을 임시 선택할 수 있어요">
+      <div className="vbox" ref={boxRef}>
         {src
           ? <video src={src} autoPlay muted loop playsInline/>
           : <div className="vbox-ph">
               <div className="vbox-circle"><div className="vbox-tri"/></div>
-              <span style={{fontSize:11,letterSpacing:".3em",color:"rgba(240,236,228,.22)",textTransform:"uppercase"}}>L O D FILM</span>
+              <span className="vbox-label">L O D FILM</span>
             </div>
         }
-        {localSrc && <div className="vbox-upload-badge">📁 임시 영상</div>}
-        <div className="vbox-hint">
-          {localSrc ? "다시 클릭하면 영상 교체" : "클릭해서 영상 임시 선택"}
-        </div>
+
+        {/* 업로드 중 프로그레스 */}
+        {uploading && (
+          <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.75)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16}}>
+            <div style={{fontSize:14,color:"#f0ece4",fontWeight:700}}>업로드 중... {progress}%</div>
+            <div style={{width:"70%",height:6,background:"rgba(255,255,255,0.2)",borderRadius:3,overflow:"hidden"}}>
+              <div style={{width:progress+"%",height:"100%",background:"#FEE500",transition:"width .3s",borderRadius:3}}/>
+            </div>
+          </div>
+        )}
+
+        {/* 업로드 버튼 */}
+        {!uploading && (
+          <button onClick={()=>fileRef.current?.click()}
+            style={{position:"absolute",bottom:14,left:"50%",transform:"translateX(-50%)",background:"#FEE500",color:"#0a0a0a",border:"none",borderRadius:20,padding:"8px 20px",fontSize:12,fontWeight:900,cursor:"pointer",whiteSpace:"nowrap",letterSpacing:".06em",boxShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>
+            📁 {src ? "영상 교체" : "영상 업로드"}
+          </button>
+        )}
       </div>
-      {/* 숨겨진 파일 입력 */}
       <input ref={fileRef} type="file" accept="video/*,image/*" style={{display:"none"}} onChange={handleFile}/>
     </div>
   );
