@@ -543,12 +543,13 @@ function Chat({open,onClose}){
 /* ── MAIN PAGE ── */
 function MainPage({onAgent, onChat}){
   const clock = useClock();
-  const titleRef = useRef(null);
+  const titleRef = useRef(null);  // 실제 DOM 측정용
   const {data, setData, loading} = useSheetData();
   const [looks, setLooks] = useState(LOOKS_INIT);
   const [modal, setModal] = useState(null);
   const [mIdx,  setMIdx]  = useState(0);
-  const [editField, setEditField] = useState(null); // {key, label, value}
+  const [editField, setEditField] = useState(null);
+  const [kakaoEdit, setKakaoEdit] = useState(null); // 카카오 링크 편집
 
   const openModal = l => { setModal(l); setMIdx(looks.findIndex(x=>x.id===l.id)); };
   const prev = ()=>{ if(mIdx>0){const i=mIdx-1;setMIdx(i);setModal(looks[i]);} };
@@ -556,6 +557,33 @@ function MainPage({onAgent, onChat}){
 
   const handleEdit = (key, label, value) => setEditField({key, label, value});
   const handleSave = (key, val) => setData(d=>({...d,[key]:val}));
+
+  // 이미지 업로드 완료 시 → 상태 + 즉시 시트 저장
+  const handleImageUpdate = async(id, url) => {
+    setLooks(ls=>ls.map(x=>x.id===id?{...x,url}:x));
+    await saveToSheet(`룩북${id}_URL`, url);
+  };
+
+  // 전체 저장 (글자 + 이미지URL 모두)
+  const saveAll = async() => {
+    if(!APPS_SCRIPT_URL){ alert("Apps Script URL이 설정되지 않았습니다."); return; }
+    const btn = document.getElementById("admin-save-btn");
+    btn.textContent="저장 중..."; btn.disabled=true;
+    try{
+      const lookUrls = {};
+      looks.forEach(l=>{ if(l.url) lookUrls[`룩북${l.id}_URL`]=l.url; });
+      await fetch(APPS_SCRIPT_URL,{
+        method:"POST", mode:"no-cors",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({action:"updateMany", data:{...data,...lookUrls}})
+      });
+      btn.textContent="✅ 저장완료!";
+      setTimeout(()=>{ btn.textContent="💾 전체 저장"; btn.disabled=false; },2000);
+    }catch(e){
+      btn.textContent="❌ 실패";
+      setTimeout(()=>{ btn.textContent="💾 전체 저장"; btn.disabled=false; },2000);
+    }
+  };
 
   const agents = [
     {id:"SN", label:data["강북팀 이름"], kakao:data["강북팀 카카오"], deadline:data["강북팀 마감"], intro:data["강북팀 소개"], regionEn:"SEOUL NORTH AREA"},
@@ -570,41 +598,33 @@ function MainPage({onAgent, onChat}){
           <span style={{fontSize:12,color:"#FEE500",fontWeight:700,letterSpacing:".04em"}}>
             🔐 관리자 모드 — 글자 클릭해서 수정
           </span>
-          <button
-            onClick={async()=>{
-              if(!APPS_SCRIPT_URL){alert("Apps Script URL이 설정되지 않았습니다.");return;}
-              const btn=document.getElementById("admin-save-btn");
-              btn.textContent="저장 중..."; btn.disabled=true;
-              try{
-                await fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},
-                  body:JSON.stringify({action:"updateMany",data})});
-                btn.textContent="✅ 저장완료!";
-                setTimeout(()=>{btn.textContent="💾 전체 저장";btn.disabled=false;},2000);
-              }catch(e){
-                btn.textContent="❌ 실패";
-                setTimeout(()=>{btn.textContent="💾 전체 저장";btn.disabled=false;},2000);
-              }
-            }}
-            id="admin-save-btn"
+          <button id="admin-save-btn" onClick={saveAll}
             style={{background:"#FEE500",color:"#0a0a0a",border:"none",borderRadius:20,padding:"8px 20px",fontSize:13,fontWeight:900,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>
             💾 전체 저장
           </button>
         </div>
       )}
 
-      {/* ─ 타이틀 ─ */}
+      {/* ─ 타이틀 — ref로 실제 폭 측정 ─ */}
       <div style={{padding:"24px 20px 16px",textAlign:"center"}}>
-        <Editable fieldKey="홈페이지 제목" label="홈페이지 제목" value={data["홈페이지 제목"]}
-          onEdit={handleEdit}
-          style={{fontSize:"clamp(28px,7.5vw,44px)",fontWeight:900,letterSpacing:".1em",lineHeight:1.28,wordBreak:"keep-all",display:"inline-block",whiteSpace:"pre-line"}}
-          className="editable"
-          tag="div"
-          ref={titleRef}
-        />
-        {/* titleRef 전달용 실제 측정 대상 */}
-        <div ref={titleRef} style={{fontSize:"clamp(28px,7.5vw,44px)",fontWeight:900,letterSpacing:".1em",lineHeight:1.28,display:"inline-block",whiteSpace:"pre-line",position:"absolute",visibility:"hidden",pointerEvents:"none"}}>
-          {data["홈페이지 제목"]}
-        </div>
+        {/* 보이는 텍스트 */}
+        {IS_ADMIN
+          ? <div onClick={()=>handleEdit("홈페이지 제목","홈페이지 제목",data["홈페이지 제목"])}
+              className="editable"
+              style={{fontSize:"clamp(28px,7.5vw,44px)",fontWeight:900,letterSpacing:".1em",lineHeight:1.28,wordBreak:"keep-all",display:"inline-block",whiteSpace:"pre-line",position:"relative",cursor:"pointer"}}>
+              <span className="edit-hint">✏️ 클릭해서 수정</span>
+              {data["홈페이지 제목"]}
+            </div>
+          : <div style={{fontSize:"clamp(28px,7.5vw,44px)",fontWeight:900,letterSpacing:".1em",lineHeight:1.28,wordBreak:"keep-all",display:"inline-block",whiteSpace:"pre-line"}}>
+              {data["홈페이지 제목"]}
+            </div>
+        }
+        {/* 폭 측정용 숨긴 div — 항상 존재 */}
+        <div ref={titleRef} aria-hidden="true" style={{
+          fontSize:"clamp(28px,7.5vw,44px)",fontWeight:900,letterSpacing:".1em",
+          lineHeight:1.28,whiteSpace:"pre-line",display:"inline-block",
+          position:"fixed",top:"-9999px",left:"-9999px",visibility:"hidden",pointerEvents:"none"
+        }}>{data["홈페이지 제목"]}</div>
       </div>
 
       {/* ─ 영상 박스 ─ */}
@@ -615,11 +635,17 @@ function MainPage({onAgent, onChat}){
       {/* ─ 공지사항 ─ */}
       {(data["공지사항"]||IS_ADMIN) && (
         <div style={{margin:"16px 20px 0"}}>
-          <Editable fieldKey="공지사항" label="공지사항" value={data["공지사항"]||"(공지사항을 입력하세요)"}
-            onEdit={handleEdit}
-            style={{display:"block",background:"rgba(254,229,0,.1)",border:"1px solid rgba(254,229,0,.3)",borderRadius:16,padding:"12px 18px",fontSize:14,fontWeight:700,color:"#FEE500",textAlign:"center",lineHeight:1.6}}
-            className="editable"
-          />
+          {IS_ADMIN
+            ? <div onClick={()=>handleEdit("공지사항","공지사항",data["공지사항"]||"")}
+                className="editable"
+                style={{display:"block",background:"rgba(254,229,0,.1)",border:"1px solid rgba(254,229,0,.3)",borderRadius:16,padding:"12px 18px",fontSize:14,fontWeight:700,color:"#FEE500",textAlign:"center",lineHeight:1.6,cursor:"pointer",position:"relative"}}>
+                <span className="edit-hint">✏️ 클릭해서 수정</span>
+                {data["공지사항"]||"(공지사항을 입력하세요)"}
+              </div>
+            : <div style={{display:"block",background:"rgba(254,229,0,.1)",border:"1px solid rgba(254,229,0,.3)",borderRadius:16,padding:"12px 18px",fontSize:14,fontWeight:700,color:"#FEE500",textAlign:"center",lineHeight:1.6}}>
+                📢 {data["공지사항"]}
+              </div>
+          }
         </div>
       )}
 
@@ -660,15 +686,36 @@ function MainPage({onAgent, onChat}){
       {/* ─ 지역 카드 ─ */}
       <div style={{padding:"20px 20px 0",display:"flex",flexDirection:"column",gap:12}}>
         {agents.map(ag=>(
-          <button key={ag.id} onClick={()=>onAgent(ag)} className="rbtn">
-            <Editable fieldKey={ag.id==="SN"?"강북팀 이름":"인천팀 이름"}
-              label={ag.id==="SN"?"강북팀 이름":"인천팀 이름"}
-              value={ag.label} onEdit={handleEdit}
-              style={{fontSize:"clamp(20px,5.8vw,30px)",fontWeight:900,color:"#0a0a0a",lineHeight:1.2,flex:1,textAlign:"center"}}
-              className="editable"
-            />
-            <span style={{fontSize:"clamp(22px,6vw,32px)",fontWeight:900,color:"#0a0a0a",flexShrink:0}}>→</span>
-          </button>
+          <div key={ag.id}>
+            <button onClick={()=>onAgent(ag)} className="rbtn">
+              {IS_ADMIN
+                ? <div onClick={e=>{e.stopPropagation();handleEdit(ag.id==="SN"?"강북팀 이름":"인천팀 이름",ag.id==="SN"?"강북팀 이름":"인천팀 이름",ag.label);}}
+                    className="editable"
+                    style={{fontSize:"clamp(20px,5.8vw,30px)",fontWeight:900,color:"#0a0a0a",lineHeight:1.2,flex:1,textAlign:"center",position:"relative",cursor:"pointer"}}>
+                    <span className="edit-hint" style={{color:"#0a0a0a",background:"rgba(0,0,0,.15)"}}>✏️ 클릭해서 수정</span>
+                    {ag.label}
+                  </div>
+                : <div style={{fontSize:"clamp(20px,5.8vw,30px)",fontWeight:900,color:"#0a0a0a",lineHeight:1.2,flex:1,textAlign:"center"}}>{ag.label}</div>
+              }
+              <span style={{fontSize:"clamp(22px,6vw,32px)",fontWeight:900,color:"#0a0a0a",flexShrink:0}}>→</span>
+            </button>
+            {/* 카카오 링크 직접 입력 (관리자 모드) */}
+            {IS_ADMIN && (
+              <div style={{marginTop:6,display:"flex",gap:6,alignItems:"center"}}>
+                <span style={{fontSize:10,color:"rgba(240,236,228,.4)",whiteSpace:"nowrap"}}>카카오 링크:</span>
+                <input
+                  defaultValue={ag.kakao}
+                  placeholder="https://open.kakao.com/..."
+                  onBlur={e=>{
+                    const key=ag.id==="SN"?"강북팀 카카오":"인천팀 카카오";
+                    handleSave(key, e.target.value);
+                    saveToSheet(key, e.target.value);
+                  }}
+                  style={{flex:1,background:"rgba(255,255,255,.07)",border:"1px solid rgba(240,236,228,.2)",borderRadius:10,padding:"6px 10px",fontSize:11,color:"#f0ece4",fontFamily:"inherit"}}
+                />
+              </div>
+            )}
+          </div>
         ))}
       </div>
 
@@ -680,8 +727,7 @@ function MainPage({onAgent, onChat}){
       </div>
       <div style={{padding:"24px 20px 0",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
         {looks.map(l=>(
-          <LookCard key={l.id} look={l} onClick={openModal}
-            onImageUpdate={(id,url)=>setLooks(ls=>ls.map(x=>x.id===id?{...x,url}:x))}/>
+          <LookCard key={l.id} look={l} onClick={openModal} onImageUpdate={handleImageUpdate}/>
         ))}
       </div>
 
