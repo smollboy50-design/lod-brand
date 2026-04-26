@@ -99,7 +99,7 @@ const {useState,useEffect,useRef,useCallback} = React;
 const CLOUDINARY_CLOUD  = "ddjdyn0yj";
 const CLOUDINARY_PRESET = "lod_unsigned";
 const SHEET_ID          = "1CPmke1eFCcKBlKykXJHyu3ngS6eL9l1uZ5JS9964Do4";
-const APPS_SCRIPT_URL   = "https://script.google.com/macros/s/AKfycbxdR8ZLb0IMalyY_eavY1k0jSI98OTCedOti6ye7eZE0Tr41Nhud8X_qCs8KwQyXv4/exec";
+const APPS_SCRIPT_URL   = "https://script.google.com/macros/s/AKfycbw3hSqt3p6PZyUY6oM3Ory_HH6X4NLGsJsmEWCooKnqFslRDw2lXrmqVrLMBy42cAw/exec";
 const MAIN_KAKAO        = "https://open.kakao.com/LOD_MAIN";
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
@@ -192,44 +192,32 @@ function useSheetData(){
   const [data,setData]=useState(DEFAULTS);
   const [loading,setLoading]=useState(false);
 
-  const load = useCallback(async()=>{
+  const load = useCallback(()=>{
     setLoading(true);
-    try{
-      // Apps Script로 읽기 (가장 안정적)
-      if(APPS_SCRIPT_URL){
-        const res = await fetch(APPS_SCRIPT_URL + "?t=" + Date.now());
-        const json = await res.json();
+    // JSONP 방식으로 CORS 우회
+    const callbackName = "lodCallback_" + Date.now();
+    const script = document.createElement("script");
+    script.src = APPS_SCRIPT_URL + "?callback=" + callbackName + "&t=" + Date.now();
+
+    window[callbackName] = (json)=>{
+      try{
         if(json.status==="ok" && json.data){
           setData({...DEFAULTS,...json.data});
-          setLoading(false);
-          return;
         }
-      }
-      // Apps Script 없으면 CSV로 시도
-      const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&t=${Date.now()}`;
-      const res2 = await fetch(url);
-      const text = await res2.text();
-      const parsed={...DEFAULTS};
-      text.trim().split("\n").forEach(row=>{
-        if(!row.trim()) return;
-        const cols=[];
-        let cur="",inQ=false;
-        for(let i=0;i<row.length;i++){
-          const c=row[i];
-          if(c==='"'){inQ=!inQ;}
-          else if(c===','&&!inQ){cols.push(cur);cur="";}
-          else{cur+=c;}
-        }
-        cols.push(cur);
-        const key=cols[0]?.replace(/"/g,"").trim()||"";
-        const val=cols[1]?.replace(/"/g,"").trim()||"";
-        if(key) parsed[key]=val;
-      });
-      setData(parsed);
-    }catch(e){
-      console.error("시트 로드 실패:",e);
-    }
-    setLoading(false);
+      }catch(e){ console.error("데이터 파싱 실패:",e); }
+      delete window[callbackName];
+      document.body.removeChild(script);
+      setLoading(false);
+    };
+
+    script.onerror = ()=>{
+      console.error("스크립트 로드 실패");
+      delete window[callbackName];
+      document.body.removeChild(script);
+      setLoading(false);
+    };
+
+    document.body.appendChild(script);
   },[]);
 
   useEffect(()=>{ load(); },[]);
