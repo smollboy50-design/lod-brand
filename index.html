@@ -99,7 +99,7 @@ const {useState,useEffect,useRef,useCallback} = React;
 const CLOUDINARY_CLOUD  = "ddjdyn0yj";
 const CLOUDINARY_PRESET = "lod_unsigned";
 const SHEET_ID          = "1CPmke1eFCcKBlKykXJHyu3ngS6eL9l1uZ5JS9964Do4";
-const APPS_SCRIPT_URL   = "https://script.google.com/macros/s/AKfycbw3hSqt3p6PZyUY6oM3Ory_HH6X4NLGsJsmEWCooKnqFslRDw2lXrmqVrLMBy42cAw/exec";
+const APPS_SCRIPT_URL   = "https://script.google.com/macros/s/AKfycbziQ2M5B33SVIRi19e3o9CDKMjhZ0YzDnouiu3Ye02bUaTAQoJ2o1mapPtAsbYWZyBp/exec";
 const MAIN_KAKAO        = "https://open.kakao.com/LOD_MAIN";
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
@@ -135,17 +135,42 @@ const SYS = `당신은 동대문 새벽시장 전문 사입 서비스 'L O D'의
 /* ── 관리자 모드 감지 ── */
 const IS_ADMIN = new URLSearchParams(location.search).get("admin") === "true";
 
-/* ── 구글 시트 → 자동 저장 (Apps Script 필요) ── */
-async function saveToSheet(key, value){
-  if(!APPS_SCRIPT_URL) return;
-  try{
-    await fetch(APPS_SCRIPT_URL, {
-      method:"POST",
-      mode:"no-cors",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({action:"update", key, value}),
+/* ── 구글 시트 자동 저장 (JSONP 방식) ── */
+function saveToSheet(key, value){
+  if(!APPS_SCRIPT_URL) return Promise.resolve();
+  return new Promise((resolve)=>{
+    const callbackName = "lodSave_" + Date.now();
+    const script = document.createElement("script");
+    const params = new URLSearchParams({
+      callback: callbackName,
+      action: "update",
+      key: key,
+      value: value,
+      t: Date.now()
     });
-  }catch(e){ console.warn("시트 저장 실패:", e); }
+    script.src = APPS_SCRIPT_URL + "?" + params.toString();
+
+    window[callbackName] = (res)=>{
+      console.log("시트 저장 완료:", key, res);
+      delete window[callbackName];
+      if(document.body.contains(script)) document.body.removeChild(script);
+      resolve(res);
+    };
+    script.onerror = ()=>{
+      console.warn("시트 저장 실패:", key);
+      delete window[callbackName];
+      if(document.body.contains(script)) document.body.removeChild(script);
+      resolve(null);
+    };
+    setTimeout(()=>{
+      if(window[callbackName]){
+        delete window[callbackName];
+        if(document.body.contains(script)) document.body.removeChild(script);
+        resolve(null);
+      }
+    }, 10000);
+    document.body.appendChild(script);
+  });
 }
 
 /* ── Cloudinary 업로드 (안정적, 진행률 포함) ── */
@@ -192,36 +217,31 @@ function useSheetData(){
   const [data,setData]=useState(DEFAULTS);
   const [loading,setLoading]=useState(false);
 
-  const load = useCallback(()=>{
+  useEffect(()=>{
     setLoading(true);
-    // JSONP 방식으로 CORS 우회
-    const callbackName = "lodCallback_" + Date.now();
+    const cbName = "lod_" + Date.now();
     const script = document.createElement("script");
-    script.src = APPS_SCRIPT_URL + "?callback=" + callbackName + "&t=" + Date.now();
+    script.src = APPS_SCRIPT_URL + "?callback=" + cbName;
 
-    window[callbackName] = (json)=>{
-      try{
-        if(json.status==="ok" && json.data){
-          setData({...DEFAULTS,...json.data});
-        }
-      }catch(e){ console.error("데이터 파싱 실패:",e); }
-      delete window[callbackName];
-      document.body.removeChild(script);
+    window[cbName] = function(json){
+      if(json && json.data){
+        setData(prev=>({...prev,...json.data}));
+      }
+      delete window[cbName];
+      if(script.parentNode) script.parentNode.removeChild(script);
       setLoading(false);
     };
 
-    script.onerror = ()=>{
-      console.error("스크립트 로드 실패");
-      delete window[callbackName];
-      document.body.removeChild(script);
+    script.onerror = function(){
+      delete window[cbName];
+      if(script.parentNode) script.parentNode.removeChild(script);
       setLoading(false);
     };
 
-    document.body.appendChild(script);
+    document.head.appendChild(script);
   },[]);
 
-  useEffect(()=>{ load(); },[]);
-  return {data,setData,loading,reload:load};
+  return {data,setData,loading};
 }
 
 /* ── LD LOGO ── */
