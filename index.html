@@ -81,7 +81,7 @@ const {useState,useEffect,useRef,useCallback} = React;
 const CLOUDINARY_CLOUD  = "ddjdyn0yj";
 const CLOUDINARY_PRESET = "lod_unsigned";
 const APPS_SCRIPT_URL   = "https://script.google.com/macros/s/AKfycbziQ2M5B33SVIRi19e3o9CDKMjhZ0YzDnouiu3Ye02bUaTAQoJ2o1mapPtAsbYWZyBp/exec";
-const MAIN_KAKAO        = "https://open.kakao.com/LOD_MAIN";
+const MAIN_KAKAO        = "https://yongsaib.sosolution.net/login";
 const IS_ADMIN          = new URLSearchParams(location.search).get("admin") === "true";
 
 /* 기본값 */
@@ -101,6 +101,7 @@ const DEFAULTS = {
   "룩북2_URL":      "",
   "룩북3_URL":      "",
   "룩북4_URL":      "",
+  "사입 프로그램":  "https://yongsaib.sosolution.net/login",
 };
 
 const STEPS = ["사입 신청","현장 픽업","지역별 분류","안전 배송"];
@@ -976,10 +977,30 @@ function App(){
   const [ag,setAg]       = useState(null);
   const [chatOpen,setChatOpen] = useState(false);
   const [data,setData]   = useState({...DEFAULTS});
+  const [saipLink, setSaipLink] = useState(()=>{
+    try{ return localStorage.getItem("lod_saip_link")||"https://yongsaib.sosolution.net/login"; }
+    catch{ return "https://yongsaib.sosolution.net/login"; }
+  });
+  const [editSaip, setEditSaip] = useState(false);
+  const [saipInput, setSaipInput] = useState(saipLink);
+
+  const saveSaipLink = ()=>{
+    setSaipLink(saipInput);
+    try{ localStorage.setItem("lod_saip_link", saipInput); }catch{}
+    saveToSheet("사입 프로그램", saipInput);
+    setEditSaip(false);
+  };
 
   // 시트에서 에이전트 데이터 로드
   useEffect(()=>{
-    loadSheet(sheetData=>setData(sheetData));
+    loadSheet(sheetData=>{
+      setData(sheetData);
+      // 시트에 사입 프로그램 링크 있으면 적용
+      if(sheetData["사입 프로그램"]){
+        setSaipLink(sheetData["사입 프로그램"]);
+        setSaipInput(sheetData["사입 프로그램"]);
+      }
+    });
   },[]);
 
   const allAgents = [
@@ -999,13 +1020,42 @@ function App(){
         </button>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           {IS_ADMIN && <span style={{background:"#FEE500",color:"#0a0a0a",fontSize:10,fontWeight:900,padding:"3px 10px",borderRadius:20,letterSpacing:".06em"}}>관리자</span>}
-          <a href={data["강북팀 카카오"]||MAIN_KAKAO} target="_blank" rel="noopener noreferrer"
+          <a href={saipLink} target="_blank" rel="noopener noreferrer"
             style={{background:"#f0ece4",color:"#0a0a0a",padding:"10px 18px",fontSize:13,fontWeight:900,textDecoration:"none",borderRadius:50,whiteSpace:"nowrap",transition:"opacity .2s"}}
             onMouseEnter={e=>e.currentTarget.style.opacity=".82"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
             사입 프로그램
           </a>
         </div>
       </div>
+
+      {/* 관리자: 사입 프로그램 링크 입력 */}
+      {IS_ADMIN && (
+        <div style={{background:"rgba(254,229,0,.08)",borderBottom:"1px solid rgba(254,229,0,.2)",padding:"10px 16px",display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+          <span style={{fontSize:11,color:"#FEE500",fontWeight:700,whiteSpace:"nowrap"}}>🔗 사입 프로그램 링크:</span>
+          {editSaip
+            ?<>
+              <input value={saipInput} onChange={e=>setSaipInput(e.target.value)}
+                placeholder="https://..."
+                style={{flex:1,minWidth:180,background:"rgba(255,255,255,.08)",border:"1px solid rgba(254,229,0,.4)",borderRadius:8,padding:"6px 10px",fontSize:12,color:"#f0ece4",fontFamily:"inherit",outline:"none"}}/>
+              <button onClick={saveSaipLink}
+                style={{background:"#FEE500",color:"#0a0a0a",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,fontWeight:900,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>
+                ✅ 저장
+              </button>
+              <button onClick={()=>setEditSaip(false)}
+                style={{background:"transparent",border:"1px solid rgba(240,236,228,.2)",color:"rgba(240,236,228,.5)",borderRadius:8,padding:"6px 10px",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>
+                취소
+              </button>
+            </>
+            :<>
+              <span style={{fontSize:11,color:"rgba(240,236,228,.5)",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{saipLink}</span>
+              <button onClick={()=>setEditSaip(true)}
+                style={{background:"rgba(254,229,0,.2)",color:"#FEE500",border:"1px solid rgba(254,229,0,.3)",borderRadius:8,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>
+                ✏️ 수정
+              </button>
+            </>
+          }
+        </div>
+      )}
 
       <div className="fade-in" key={page}>
         {page==="main"
