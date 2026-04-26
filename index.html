@@ -186,31 +186,42 @@ function useClock(){
 function useSheetData(){
   const [data,setData]=useState(DEFAULTS);
   const [loading,setLoading]=useState(false);
-  useEffect(()=>{
+
+  const load = useCallback(async()=>{
     if(!SHEET_ID){setData(DEFAULTS);return;}
     setLoading(true);
-    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
-    fetch(url).then(r=>r.text()).then(text=>{
-      const rows=text.trim().split("\n"); // ← 헤더 건너뛰기 제거 (slice(1) 삭제)
+    try{
+      // 캐시 방지: 매번 새로 가져오기
+      const ts = Date.now();
+      const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&t=${ts}`;
+      const res = await fetch(url, {cache:"no-store"});
+      const text = await res.text();
+      const rows = text.trim().split("\n");
       const parsed={...DEFAULTS};
       rows.forEach(row=>{
-        // CSV 따옴표 파싱
+        // CSV 정확한 파싱
         const cols=[];
         let cur="",inQ=false;
         for(let i=0;i<row.length;i++){
           if(row[i]==='"'){inQ=!inQ;}
-          else if(row[i]===','&&!inQ){cols.push(cur.trim());cur="";}
+          else if(row[i]===','&&!inQ){cols.push(cur);cur="";}
           else{cur+=row[i];}
         }
-        cols.push(cur.trim());
-        const key=(cols[0]||"").replace(/^"|"$/g,"").trim();
-        const val=(cols[1]||"").replace(/^"|"$/g,"").replace(/""/g,'"').trim();
-        if(key && key in parsed) parsed[key]=val;
+        cols.push(cur);
+        const key=(cols[0]||"").replace(/"/g,"").trim();
+        const val=(cols[1]||"").replace(/"/g,"").replace(/""/g,'"').trim();
+        if(key) parsed[key]=val; // DEFAULTS에 없어도 저장
       });
       setData(parsed);
-    }).catch(()=>setData(DEFAULTS)).finally(()=>setLoading(false));
+    }catch(e){
+      console.warn("시트 로드 실패:",e);
+      setData(DEFAULTS);
+    }
+    setLoading(false);
   },[]);
-  return {data,setData,loading};
+
+  useEffect(()=>{ load(); },[]);
+  return {data,setData,loading,reload:load};
 }
 
 /* ── LD LOGO ── */
