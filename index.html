@@ -328,30 +328,69 @@ function VideoBox({url, titleRef, onSave}){
    미디어 박스 — 1칸에 영상 또는 사진
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function MediaBox({videoUrl, photoUrl, onUpload, loading, prog, error}){
-  const fileRef = useRef(null);
+  const fileRef  = useRef(null);
+  const vidRef   = useRef(null);
+  const [muted,  setMuted]   = useState(true);
+  const [playing,setPlaying] = useState(true);
   const hasMedia = videoUrl || photoUrl;
+
+  const togglePlay=()=>{
+    if(!vidRef.current) return;
+    if(playing){ vidRef.current.pause(); setPlaying(false); }
+    else{ vidRef.current.play(); setPlaying(true); }
+  };
+  const toggleMute=()=>{
+    if(!vidRef.current) return;
+    vidRef.current.muted = !muted;
+    setMuted(!muted);
+  };
 
   return(
     <div>
       <div className="lcard" style={{cursor:"default"}}>
         <div className="lcard-inner">
           {videoUrl
-            ?<video src={videoUrl} autoPlay muted loop playsInline style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
+            ?<video ref={vidRef} src={videoUrl} autoPlay muted loop playsInline
+                style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
             :photoUrl
-              ?<img src={photoUrl} alt="팀 미디어" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
+              ?<img src={photoUrl} alt="팀 미디어"
+                  style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
               :<>
                 <div style={{width:56,height:56,border:"1px solid rgba(240,236,228,.15)",borderRadius:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,color:"rgba(240,236,228,.2)"}}>+</div>
                 <span style={{fontSize:11,letterSpacing:".2em",color:"rgba(240,236,228,.22)",textTransform:"uppercase"}}>사진 또는 영상</span>
               </>
           }
         </div>
+
         {loading && <UploadOverlay prog={prog} text="업로드 중"/>}
+
+        {/* 영상일 때 컨트롤바 */}
+        {videoUrl && !loading && (
+          <div style={{position:"absolute",bottom:0,left:0,right:0,background:"linear-gradient(to top,rgba(0,0,0,.75),transparent)",padding:"28px 10px 10px",display:"flex",alignItems:"center",gap:6,zIndex:3}}>
+            {/* 재생/정지 */}
+            <button onClick={togglePlay}
+              style={{background:"rgba(255,255,255,.18)",border:"none",borderRadius:"50%",width:30,height:30,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              {playing
+                ?<svg width="10" height="10" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                :<svg width="10" height="10" viewBox="0 0 24 24" fill="#fff"><polygon points="5,3 19,12 5,21"/></svg>
+              }
+            </button>
+            {/* 소리 토글 */}
+            <button onClick={toggleMute}
+              style={{background:"rgba(255,255,255,.18)",border:"none",borderRadius:"50%",width:30,height:30,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              {muted
+                ?<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+                :<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><path d="M15.54,8.46a5,5,0,0,1,0,7.07"/></svg>
+              }
+            </button>
+          </div>
+        )}
 
         {/* 관리자 업로드 버튼 */}
         {IS_ADMIN && !loading && (
           <button className="upload-btn"
             onClick={()=>fileRef.current?.click()}
-            style={{bottom:10,fontSize:12,padding:"8px 20px"}}>
+            style={{bottom: videoUrl?52:10, fontSize:11, padding:"7px 16px"}}>
             {hasMedia ? "📁 교체하기" : "📁 사진 / 영상 올리기"}
           </button>
         )}
@@ -366,7 +405,6 @@ function MediaBox({videoUrl, photoUrl, onUpload, loading, prog, error}){
 
       {error && <div style={{marginTop:6,fontSize:11,color:"rgba(255,140,140,.85)",textAlign:"center",lineHeight:1.5}}>{error}</div>}
 
-      {/* 사진/영상 모두 받는 파일 입력 */}
       <input ref={fileRef} type="file" accept="image/*,video/*" style={{display:"none"}}
         onChange={e=>{ const f=e.target.files[0]; if(f&&onUpload) onUpload(f); e.target.value=""; }}/>
     </div>
