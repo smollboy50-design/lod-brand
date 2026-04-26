@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -99,7 +100,7 @@ const {useState,useEffect,useRef,useCallback} = React;
 const CLOUDINARY_CLOUD  = "ddjdyn0yj";
 const CLOUDINARY_PRESET = "lod_unsigned";
 const SHEET_ID          = "1CPmke1eFCcKBlKykXJHyu3ngS6eL9l1uZ5JS9964Do4";
-const APPS_SCRIPT_URL   = "https://script.google.com/macros/s/AKfycbwzavQx1rGgsZyahyGc0bKwlfYq5pAOs12-qvU6qlGfQk-LTTAFvwWCktxGP5vuAFSF/exec";
+const APPS_SCRIPT_URL   = "https://script.google.com/macros/s/AKfycbzPPr1S4QWAABPa32Em3XrxNoZwAHwWW4sV-eu5zdovwad5nhmc8SsQb1k_WrNEmjzo/exec";
 const MAIN_KAKAO        = "https://open.kakao.com/LOD_MAIN";
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
@@ -193,17 +194,25 @@ function useSheetData(){
   const [loading,setLoading]=useState(false);
 
   const load = useCallback(async()=>{
-    if(!SHEET_ID){setData(DEFAULTS);return;}
     setLoading(true);
     try{
-      // 캐시 완전 방지
+      // Apps Script로 읽기 (가장 안정적)
+      if(APPS_SCRIPT_URL){
+        const res = await fetch(APPS_SCRIPT_URL + "?t=" + Date.now());
+        const json = await res.json();
+        if(json.status==="ok" && json.data){
+          setData({...DEFAULTS,...json.data});
+          setLoading(false);
+          return;
+        }
+      }
+      // Apps Script 없으면 CSV로 시도
       const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&t=${Date.now()}`;
-      const res = await fetch(url);
-      const text = await res.text();
+      const res2 = await fetch(url);
+      const text = await res2.text();
       const parsed={...DEFAULTS};
       text.trim().split("\n").forEach(row=>{
         if(!row.trim()) return;
-        // CSV 파싱 (따옴표 처리)
         const cols=[];
         let cur="",inQ=false;
         for(let i=0;i<row.length;i++){
@@ -215,13 +224,11 @@ function useSheetData(){
         cols.push(cur);
         const key=cols[0]?.replace(/"/g,"").trim()||"";
         const val=cols[1]?.replace(/"/g,"").trim()||"";
-        if(key) parsed[key]=val; // 키가 있으면 무조건 저장
+        if(key) parsed[key]=val;
       });
-      console.log("시트 데이터 로드 완료:", parsed);
       setData(parsed);
     }catch(e){
       console.error("시트 로드 실패:",e);
-      setData(DEFAULTS);
     }
     setLoading(false);
   },[]);
