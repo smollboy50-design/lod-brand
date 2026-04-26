@@ -116,6 +116,11 @@ const DEFAULTS = {
   "인천팀 소개":    "인천·부천 지역 사입의 최고 전문가 팀입니다.\n20년 경력의 완벽한 픽업과 빠른 피드백을 약속드립니다.\n경기권 로드샵 사장님들의 든든한 파트너가 되겠습니다.",
   "인천팀 카카오":  "https://open.kakao.com/INCHEON_BUCHEON",
   "인천팀 마감":    "매일 AM 02:30",
+  "룩북1_URL":      "",
+  "룩북2_URL":      "",
+  "룩북3_URL":      "",
+  "룩북4_URL":      "",
+  "kakao_link":     "",
 };
 
 const STEPS = ["사입 신청","현장 픽업","지역별 분류","안전 배송"];
@@ -191,30 +196,31 @@ function useSheetData(){
     if(!SHEET_ID){setData(DEFAULTS);return;}
     setLoading(true);
     try{
-      // 캐시 방지: 매번 새로 가져오기
-      const ts = Date.now();
-      const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&t=${ts}`;
-      const res = await fetch(url, {cache:"no-store"});
+      // 캐시 완전 방지
+      const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&t=${Date.now()}`;
+      const res = await fetch(url);
       const text = await res.text();
-      const rows = text.trim().split("\n");
       const parsed={...DEFAULTS};
-      rows.forEach(row=>{
-        // CSV 정확한 파싱
+      text.trim().split("\n").forEach(row=>{
+        if(!row.trim()) return;
+        // CSV 파싱 (따옴표 처리)
         const cols=[];
         let cur="",inQ=false;
         for(let i=0;i<row.length;i++){
-          if(row[i]==='"'){inQ=!inQ;}
-          else if(row[i]===','&&!inQ){cols.push(cur);cur="";}
-          else{cur+=row[i];}
+          const c=row[i];
+          if(c==='"'){inQ=!inQ;}
+          else if(c===','&&!inQ){cols.push(cur);cur="";}
+          else{cur+=c;}
         }
         cols.push(cur);
-        const key=(cols[0]||"").replace(/"/g,"").trim();
-        const val=(cols[1]||"").replace(/"/g,"").replace(/""/g,'"').trim();
-        if(key) parsed[key]=val; // DEFAULTS에 없어도 저장
+        const key=cols[0]?.replace(/"/g,"").trim()||"";
+        const val=cols[1]?.replace(/"/g,"").trim()||"";
+        if(key) parsed[key]=val; // 키가 있으면 무조건 저장
       });
+      console.log("시트 데이터 로드 완료:", parsed);
       setData(parsed);
     }catch(e){
-      console.warn("시트 로드 실패:",e);
+      console.error("시트 로드 실패:",e);
       setData(DEFAULTS);
     }
     setLoading(false);
