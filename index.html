@@ -271,12 +271,17 @@ function UploadOverlay({progress, text}){
 
 /* ── 영상 박스 ── */
 function VideoBox({videoUrl, titleRef, sheetKey}){
-  const boxRef  = useRef(null);
-  const fileRef = useRef(null);
-  const [src,setSrc]     = useState(videoUrl||"");
-  const [prog,setProg]   = useState(0);
+  const boxRef   = useRef(null);
+  const fileRef  = useRef(null);
+  const videoRef = useRef(null);
+  const [src,setSrc]           = useState(videoUrl||"");
+  const [prog,setProg]         = useState(0);
   const [uploading,setUploading] = useState(false);
-  const [error,setError] = useState("");
+  const [error,setError]       = useState("");
+  const [playing,setPlaying]   = useState(true);
+  const [muted,setMuted]       = useState(true);
+  const [volume,setVolume]     = useState(0.7);
+  const [showVol,setShowVol]   = useState(false);
 
   useEffect(()=>{ if(videoUrl) setSrc(videoUrl); },[videoUrl]);
 
@@ -295,6 +300,25 @@ function VideoBox({videoUrl, titleRef, sheetKey}){
     return()=>{ro.disconnect();window.removeEventListener("resize",sync);};
   },[titleRef]);
 
+  const togglePlay=()=>{
+    if(!videoRef.current)return;
+    if(playing){ videoRef.current.pause(); setPlaying(false); }
+    else { videoRef.current.play(); setPlaying(true); }
+  };
+  const toggleMute=()=>{
+    if(!videoRef.current)return;
+    const next=!muted;
+    videoRef.current.muted=next;
+    setMuted(next);
+  };
+  const changeVolume=(v)=>{
+    if(!videoRef.current)return;
+    videoRef.current.volume=v;
+    videoRef.current.muted=v===0;
+    setVolume(v);
+    setMuted(v===0);
+  };
+
   const handleFile=async(e)=>{
     const file=e.target.files[0]; if(!file)return;
     setError(""); setUploading(true); setProg(0);
@@ -302,17 +326,16 @@ function VideoBox({videoUrl, titleRef, sheetKey}){
       const url=await uploadToCloudinary(file,"video",setProg);
       setSrc(url);
       await saveToSheet(sheetKey||"메인 영상 URL", url);
-      if(!APPS_SCRIPT_URL) alert("✅ 업로드 완료!\n구글 시트에 자동 저장하려면 Apps Script를 설정하세요.\n\n영상 URL:\n"+url);
-    }catch(err){
-      setError(err.message);
-    }finally{ setUploading(false); e.target.value=""; }
+    }catch(err){ setError(err.message); }
+    finally{ setUploading(false); e.target.value=""; }
   };
 
   return(
     <div className="vbox-outer">
       <div className="vbox" ref={boxRef}>
         {src
-          ?<video src={src} autoPlay muted loop playsInline/>
+          ?<video ref={videoRef} src={src} autoPlay muted loop playsInline
+              style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
           :<div className="vbox-ph">
             <div style={{width:76,height:76,borderRadius:"50%",border:"1px solid rgba(240,236,228,.18)",display:"flex",alignItems:"center",justifyContent:"center"}}>
               <div style={{width:0,height:0,borderTop:"11px solid transparent",borderBottom:"11px solid transparent",borderLeft:"18px solid rgba(240,236,228,.38)",marginLeft:5}}/>
@@ -320,9 +343,48 @@ function VideoBox({videoUrl, titleRef, sheetKey}){
             <span style={{fontSize:11,letterSpacing:".34em",color:"rgba(240,236,228,.22)",textTransform:"uppercase"}}>L O D FILM</span>
           </div>
         }
+
         {uploading && <UploadOverlay progress={prog} text="업로드 중"/>}
+
+        {/* ── 컨트롤바 ── */}
+        {src && !uploading && (
+          <div style={{position:"absolute",bottom:0,left:0,right:0,background:"linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 100%)",padding:"32px 14px 12px",display:"flex",alignItems:"center",gap:10,zIndex:3}}>
+            {/* 재생/정지 */}
+            <button onClick={togglePlay}
+              style={{background:"rgba(255,255,255,.18)",border:"none",borderRadius:"50%",width:36,height:36,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,backdropFilter:"blur(4px)"}}>
+              {playing
+                ?<svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                :<svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><polygon points="5,3 19,12 5,21"/></svg>
+              }
+            </button>
+
+            {/* 음소거 토글 */}
+            <button onClick={toggleMute}
+              style={{background:"rgba(255,255,255,.18)",border:"none",borderRadius:"50%",width:36,height:36,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,backdropFilter:"blur(4px)"}}
+              onMouseEnter={()=>setShowVol(true)} onMouseLeave={()=>setShowVol(false)}>
+              {muted
+                ?<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+                :<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><path d="M15.54,8.46a5,5,0,0,1,0,7.07"/><path d="M19.07,4.93a10,10,0,0,1,0,14.14"/></svg>
+              }
+            </button>
+
+            {/* 볼륨 슬라이더 */}
+            {showVol && (
+              <input type="range" min="0" max="1" step="0.05" value={volume}
+                onChange={e=>changeVolume(parseFloat(e.target.value))}
+                onMouseEnter={()=>setShowVol(true)} onMouseLeave={()=>setShowVol(false)}
+                style={{width:80,accentColor:"#FEE500",cursor:"pointer"}}/>
+            )}
+
+            <div style={{flex:1}}/>
+            <span style={{fontSize:10,color:"rgba(255,255,255,.6)",letterSpacing:".06em"}}>L O D</span>
+          </div>
+        )}
+
+        {/* 관리자 업로드 버튼 */}
         {IS_ADMIN && !uploading && (
-          <button className="upload-btn" onClick={()=>fileRef.current?.click()}>
+          <button className="upload-btn" style={{bottom:src?52:10}}
+            onClick={()=>fileRef.current?.click()}>
             {src?"📁 영상 교체":"📁 영상 업로드"}
           </button>
         )}
@@ -502,10 +564,31 @@ function MainPage({onAgent, onChat}){
 
   return(
     <div>
-      {/* 관리자 알림바 */}
+      {/* 관리자 알림바 + 저장 버튼 */}
       {IS_ADMIN && (
-        <div style={{background:"rgba(254,229,0,.12)",borderBottom:"1px solid rgba(254,229,0,.25)",padding:"10px 20px",textAlign:"center",fontSize:12,color:"#FEE500",fontWeight:700,letterSpacing:".06em"}}>
-          🔐 관리자 모드 — 글자를 클릭해서 수정하고, 버튼으로 영상·이미지를 업로드하세요
+        <div style={{background:"rgba(254,229,0,.12)",borderBottom:"1px solid rgba(254,229,0,.25)",padding:"12px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexWrap:"wrap"}}>
+          <span style={{fontSize:12,color:"#FEE500",fontWeight:700,letterSpacing:".04em"}}>
+            🔐 관리자 모드 — 글자 클릭해서 수정
+          </span>
+          <button
+            onClick={async()=>{
+              if(!APPS_SCRIPT_URL){alert("Apps Script URL이 설정되지 않았습니다.");return;}
+              const btn=document.getElementById("admin-save-btn");
+              btn.textContent="저장 중..."; btn.disabled=true;
+              try{
+                await fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},
+                  body:JSON.stringify({action:"updateMany",data})});
+                btn.textContent="✅ 저장완료!";
+                setTimeout(()=>{btn.textContent="💾 전체 저장";btn.disabled=false;},2000);
+              }catch(e){
+                btn.textContent="❌ 실패";
+                setTimeout(()=>{btn.textContent="💾 전체 저장";btn.disabled=false;},2000);
+              }
+            }}
+            id="admin-save-btn"
+            style={{background:"#FEE500",color:"#0a0a0a",border:"none",borderRadius:20,padding:"8px 20px",fontSize:13,fontWeight:900,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>
+            💾 전체 저장
+          </button>
         </div>
       )}
 
