@@ -803,37 +803,38 @@ function AgentPage({ag, onBack, allAgents, onAgent, sheetData, onDataUpdate}){
         <h2 style={{fontSize:"clamp(28px,8vw,44px)",fontWeight:900,lineHeight:1.15}}>{ag.label}</h2>
       </div>
 
-      {/* 미디어 박스 — 1칸, 영상 또는 사진 */}
-      <div style={{padding:"16px 20px 0"}}>
-        <MediaBox
-          videoUrl={videoUrl}
-          photoUrl={photoUrl}
-          onUpload={async(file)=>{
-            const isVideo = file.type.startsWith("video/");
-            const type    = isVideo ? "video" : "image";
-            const key     = isVideo ? videoKey : photoKey;
-            if(isVideo){ setVidError(""); setVidLoading(true); setVidProg(0); }
-            else        { setImgError(""); setImgLoading(true); setImgProg(0); }
-            try{
-              const url = await uploadFile(file, type, isVideo?setVidProg:setImgProg);
-              if(isVideo){ setVideoUrl(url); setPhotoUrl(""); }
-              else        { setPhotoUrl(url); setVideoUrl(""); }
-              await saveToSheet(key, url);
-              // 이전 미디어 키 비우기
-              await saveToSheet(isVideo?photoKey:videoKey, "");
-              if(onDataUpdate){ onDataUpdate(key,url); onDataUpdate(isVideo?photoKey:videoKey,""); }
-            }catch(err){
-              if(isVideo) setVidError(err.message);
-              else        setImgError(err.message);
-            }finally{
-              if(isVideo) setVidLoading(false);
-              else        setImgLoading(false);
-            }
-          }}
-          loading={vidLoading||imgLoading}
-          prog={vidLoading?vidProg:imgProg}
-          error={vidError||imgError}
-        />
+      {/* 미디어 박스 — 룩북과 동일한 크기, 중앙 정렬 */}
+      <div style={{padding:"16px 20px 0",display:"flex",justifyContent:"center"}}>
+        <div style={{width:"50%"}}>
+          <MediaBox
+            videoUrl={videoUrl}
+            photoUrl={photoUrl}
+            onUpload={async(file)=>{
+              const isVideo = file.type.startsWith("video/");
+              const type    = isVideo ? "video" : "image";
+              const key     = isVideo ? videoKey : photoKey;
+              if(isVideo){ setVidError(""); setVidLoading(true); setVidProg(0); }
+              else        { setImgError(""); setImgLoading(true); setImgProg(0); }
+              try{
+                const url = await uploadFile(file, type, isVideo?setVidProg:setImgProg);
+                if(isVideo){ setVideoUrl(url); setPhotoUrl(""); }
+                else        { setPhotoUrl(url); setVideoUrl(""); }
+                await saveToSheet(key, url);
+                await saveToSheet(isVideo?photoKey:videoKey, "");
+                if(onDataUpdate){ onDataUpdate(key,url); onDataUpdate(isVideo?photoKey:videoKey,""); }
+              }catch(err){
+                if(isVideo) setVidError(err.message);
+                else        setImgError(err.message);
+              }finally{
+                if(isVideo) setVidLoading(false);
+                else        setImgLoading(false);
+              }
+            }}
+            loading={vidLoading||imgLoading}
+            prog={vidLoading?vidProg:imgProg}
+            error={vidError||imgError}
+          />
+        </div>
       </div>
 
       {/* 카카오톡 버튼 — 노란색 */}
