@@ -191,15 +191,21 @@ function useSheetData(){
     setLoading(true);
     const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
     fetch(url).then(r=>r.text()).then(text=>{
-      const rows=text.trim().split("\n").slice(1);
+      const rows=text.trim().split("\n"); // ← 헤더 건너뛰기 제거 (slice(1) 삭제)
       const parsed={...DEFAULTS};
       rows.forEach(row=>{
-        const m=row.match(/^"?([^",\r\n]+)"?,?"?([\s\S]*?)"?$/);
-        if(m&&m[1]){
-          const key=m[1].trim();
-          const val=m[2].replace(/\\n/g,"\n").replace(/""/g,'"').trim();
-          if(key in parsed) parsed[key]=val;
+        // CSV 따옴표 파싱
+        const cols=[];
+        let cur="",inQ=false;
+        for(let i=0;i<row.length;i++){
+          if(row[i]==='"'){inQ=!inQ;}
+          else if(row[i]===','&&!inQ){cols.push(cur.trim());cur="";}
+          else{cur+=row[i];}
         }
+        cols.push(cur.trim());
+        const key=(cols[0]||"").replace(/^"|"$/g,"").trim();
+        const val=(cols[1]||"").replace(/^"|"$/g,"").replace(/""/g,'"').trim();
+        if(key && key in parsed) parsed[key]=val;
       });
       setData(parsed);
     }).catch(()=>setData(DEFAULTS)).finally(()=>setLoading(false));
@@ -546,6 +552,14 @@ function MainPage({onAgent, onChat}){
   const titleRef = useRef(null);  // 실제 DOM 측정용
   const {data, setData, loading} = useSheetData();
   const [looks, setLooks] = useState(LOOKS_INIT);
+
+  // 시트에서 룩북 URL 불러오기
+  useEffect(()=>{
+    setLooks(ls=>ls.map(l=>{
+      const url=data[`룩북${l.id}_URL`]||"";
+      return url?{...l,url}:l;
+    }));
+  },[data]);
   const [modal, setModal] = useState(null);
   const [mIdx,  setMIdx]  = useState(0);
   const [editField, setEditField] = useState(null);
