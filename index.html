@@ -295,16 +295,21 @@ function VideoBox({url, titleRef, onSave}){
         {/* 컨트롤바 */}
         {src && !loading && (
           <div style={{position:"absolute",bottom:0,left:0,right:0,background:"linear-gradient(to top,rgba(0,0,0,.75),transparent)",padding:"32px 14px 12px",display:"flex",alignItems:"center",gap:8,zIndex:3}}>
+            {/* 재생/정지 */}
             <button onClick={togglePlay} style={{background:"rgba(255,255,255,.18)",border:"none",borderRadius:"50%",width:34,height:34,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
               {playing
                 ?<svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
                 :<svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><polygon points="5,3 19,12 5,21"/></svg>
               }
             </button>
-            <button onClick={toggleMute} style={{background:"rgba(255,255,255,.18)",border:"none",borderRadius:"50%",width:34,height:34,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            {/* 소리 버튼 — 안내 텍스트 포함 */}
+            <button onClick={toggleMute}
+              style={{background:"rgba(0,0,0,.55)",border:"none",borderRadius:20,padding:"6px 12px",cursor:"pointer",display:"flex",alignItems:"center",gap:5,backdropFilter:"blur(4px)"}}>
               {muted
-                ?<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-                :<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><path d="M15.54,8.46a5,5,0,0,1,0,7.07"/></svg>
+                ?<><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+                  <span style={{fontSize:10,color:"#fff",fontWeight:700}}>탭→소리켜짐</span></>
+                :<><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><path d="M15.54,8.46a5,5,0,0,1,0,7.07"/></svg>
+                  <span style={{fontSize:10,color:"#fff",fontWeight:700}}>탭→음소거</span></>
               }
             </button>
             <div style={{flex:1}}/>
@@ -370,9 +375,9 @@ function MediaBox({videoUrl, photoUrl, onUpload, loading, prog, error}){
             style={{position:"absolute",bottom:10,right:10,background:"rgba(0,0,0,.65)",border:"none",borderRadius:20,padding:"6px 12px",cursor:"pointer",display:"flex",alignItems:"center",gap:5,zIndex:3,backdropFilter:"blur(4px)"}}>
             {muted
               ?<><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-                <span style={{fontSize:10,color:"#fff",fontWeight:700}}>소리</span></>
+                <span style={{fontSize:10,color:"#fff",fontWeight:700,letterSpacing:".02em"}}>탭→소리켜짐</span></>
               :<><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><path d="M15.54,8.46a5,5,0,0,1,0,7.07"/></svg>
-                <span style={{fontSize:10,color:"#fff",fontWeight:700}}>소리</span></>
+                <span style={{fontSize:10,color:"#fff",fontWeight:700,letterSpacing:".02em"}}>탭→음소거</span></>
             }
           </button>
         )}
@@ -762,24 +767,23 @@ function AgentPage({ag, onBack, allAgents, onAgent, sheetData, onDataUpdate}){
   const noticeKey= `${prefix}_공지`;
   const kakaoKey = `${prefix}_카카오`;
 
-  const [videoUrl, setVideoUrl] = useState(sheetData[videoKey]||"");
-  const [photoUrl, setPhotoUrl] = useState(sheetData[photoKey]||"");
-  const [intro,    setIntro   ] = useState(sheetData[introKey]||ag.intro||"");
-  const [notice,   setNotice  ] = useState(sheetData[noticeKey]||"");
-  const [kakaoUrl, setKakaoUrl] = useState(sheetData[kakaoKey]||ag.kakao||"");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [intro,    setIntro   ] = useState("");
+  const [notice,   setNotice  ] = useState("");
+  const [kakaoUrl, setKakaoUrl] = useState("");
   const [editField,setEditField] = useState(null);
 
-  // 영상 업로드
-  const [vidProg, setVidProg]   = useState(0);
-  const [vidLoading, setVidLoading] = useState(false);
-  const [vidError,  setVidError]    = useState("");
-
-  // 사진 업로드
-  const [imgProg, setImgProg]   = useState(0);
-  const [imgLoading, setImgLoading] = useState(false);
-  const [imgError,  setImgError]    = useState("");
-
-  useEffect(()=>{window.scrollTo({top:0});},[ag.id]);
+  // 팀 바뀔 때마다 상태 초기화 — 강북→인천 이동 시 영상 섞임 방지
+  useEffect(()=>{
+    setVideoUrl(sheetData[videoKey]||"");
+    setPhotoUrl(sheetData[photoKey]||"");
+    setIntro(sheetData[introKey]||ag.intro||"");
+    setNotice(sheetData[noticeKey]||"");
+    setKakaoUrl(sheetData[kakaoKey]||ag.kakao||"");
+    setEditField(null);
+    window.scrollTo({top:0});
+  },[ag.id]);
 
   const handleVideo = async(e)=>{
     const file=e.target.files[0]; if(!file) return;
