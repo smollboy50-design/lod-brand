@@ -113,19 +113,36 @@ const LOOKS_INIT = [
 const SYS = `당신은 동대문 새벽시장 전문 사입 서비스 'L O D'의 24시간 AI 비서입니다. 사입, 동대문 시장, 패션 트렌드에 대해 친절하고 전문적으로 2-4문장, 한국어로만 답변하세요.`;
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   시트 읽기 (JSONP)
+   시트 읽기 (JSONP) — 캐시 우선 표시
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const CACHE_KEY = "lod_data_cache";
+
+function getCached(){
+  try{ const c=localStorage.getItem(CACHE_KEY); return c?JSON.parse(c):null; }catch{ return null; }
+}
+function setCache(data){
+  try{ localStorage.setItem(CACHE_KEY, JSON.stringify(data)); }catch{}
+}
+
 function loadSheet(callback){
+  // 1. 캐시된 데이터 먼저 즉시 표시
+  const cached = getCached();
+  if(cached) callback({...DEFAULTS,...cached});
+
+  // 2. 시트에서 새 데이터 가져오기
   const name = "cb_" + Date.now();
   const s = document.createElement("script");
   s.src = APPS_SCRIPT_URL + "?callback=" + name + "&t=" + Date.now();
   window[name] = (res)=>{
     delete window[name];
     document.body.removeChild(s);
-    if(res && res.status === "ok") callback({...DEFAULTS, ...res.data});
-    else callback({...DEFAULTS});
+    if(res && res.status === "ok"){
+      const newData = {...DEFAULTS, ...res.data};
+      setCache(res.data); // 캐시 저장
+      callback(newData);  // 새 데이터로 교체
+    }
   };
-  s.onerror = ()=>{ delete window[name]; document.body.removeChild(s); callback({...DEFAULTS}); };
+  s.onerror = ()=>{ delete window[name]; document.body.removeChild(s); if(!cached) callback({...DEFAULTS}); };
   document.body.appendChild(s);
 }
 
