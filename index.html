@@ -671,62 +671,214 @@ function MainPage({onAgent, onChat}){
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    에이전트 페이지
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-function AgentPage({ag, onBack, allAgents, onAgent}){
-  const titleRef = useRef(null);
+function AgentPage({ag, onBack, allAgents, onAgent, sheetData, onDataUpdate}){
+  const titleRef  = useRef(null);
+  const vidRef    = useRef(null);
+  const imgRef    = useRef(null);
+
+  // 팀별 데이터 키
+  const prefix   = ag.id==="SN" ? "강북팀" : "인천팀";
+  const videoKey = `${prefix}_영상URL`;
+  const photoKey = `${prefix}_사진URL`;
+  const introKey = `${prefix}_소개`;
+  const noticeKey= `${prefix}_공지`;
+  const kakaoKey = `${prefix}_카카오`;
+
+  const [videoUrl, setVideoUrl] = useState(sheetData[videoKey]||"");
+  const [photoUrl, setPhotoUrl] = useState(sheetData[photoKey]||"");
+  const [intro,    setIntro   ] = useState(sheetData[introKey]||ag.intro||"");
+  const [notice,   setNotice  ] = useState(sheetData[noticeKey]||"");
+  const [kakaoUrl, setKakaoUrl] = useState(sheetData[kakaoKey]||ag.kakao||"");
+  const [editField,setEditField] = useState(null);
+
+  // 영상 업로드
+  const [vidProg, setVidProg]   = useState(0);
+  const [vidLoading, setVidLoading] = useState(false);
+  const [vidError,  setVidError]    = useState("");
+
+  // 사진 업로드
+  const [imgProg, setImgProg]   = useState(0);
+  const [imgLoading, setImgLoading] = useState(false);
+  const [imgError,  setImgError]    = useState("");
+
   useEffect(()=>{window.scrollTo({top:0});},[ag.id]);
+
+  const handleVideo = async(e)=>{
+    const file=e.target.files[0]; if(!file) return;
+    setVidError(""); setVidLoading(true); setVidProg(0);
+    try{
+      const url = await uploadFile(file,"video",setVidProg);
+      setVideoUrl(url);
+      await saveToSheet(videoKey, url);
+      if(onDataUpdate) onDataUpdate(videoKey, url);
+    }catch(err){ setVidError(err.message); }
+    finally{ setVidLoading(false); e.target.value=""; }
+  };
+
+  const handlePhoto = async(e)=>{
+    const file=e.target.files[0]; if(!file) return;
+    setImgError(""); setImgLoading(true); setImgProg(0);
+    try{
+      const url = await uploadFile(file,"image",setImgProg);
+      setPhotoUrl(url);
+      await saveToSheet(photoKey, url);
+      if(onDataUpdate) onDataUpdate(photoKey, url);
+    }catch(err){ setImgError(err.message); }
+    finally{ setImgLoading(false); e.target.value=""; }
+  };
+
+  const openEdit=(key,label,val)=>setEditField({key,label,value:val});
+  const handleSave=async(key,val)=>{
+    if(key===introKey) setIntro(val);
+    if(key===noticeKey) setNotice(val);
+    await saveToSheet(key,val);
+    if(onDataUpdate) onDataUpdate(key,val);
+  };
+
   return(
     <div className="fade-in">
-      <div style={{padding:"18px 20px 0"}}>
-        <button onClick={onBack} style={{background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:6,fontSize:11,letterSpacing:".26em",color:"rgba(240,236,228,.38)",textTransform:"uppercase",padding:0,fontFamily:"inherit",transition:"color .2s"}}
-          onMouseEnter={e=>e.currentTarget.style.color="rgba(240,236,228,.75)"}
-          onMouseLeave={e=>e.currentTarget.style.color="rgba(240,236,228,.38)"}>
-          <span style={{fontSize:16}}>←</span> Back to L O D
+      {/* ← BACK 버튼 — 크고 선명하게 */}
+      <div style={{padding:"20px 20px 0"}}>
+        <button onClick={onBack}
+          style={{background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:10,padding:0,fontFamily:"inherit",transition:"opacity .2s"}}
+          onMouseEnter={e=>e.currentTarget.style.opacity=".6"}
+          onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+          <span style={{fontSize:28,color:"#f0ece4",fontWeight:900}}>←</span>
+          <span style={{fontSize:18,fontWeight:900,color:"#f0ece4",letterSpacing:".12em"}}>BACK</span>
         </button>
       </div>
-      <div style={{padding:"16px 20px 0"}}>
-        <VideoBox url={ag.videoUrl||""} titleRef={titleRef}/>
+
+      {/* 팀 이름 */}
+      <div style={{padding:"16px 20px 0",textAlign:"center"}}>
+        <div style={{fontSize:10,letterSpacing:".32em",color:"rgba(240,236,228,.28)",textTransform:"uppercase",marginBottom:8}}>{ag.regionEn}</div>
+        <h2 style={{fontSize:"clamp(28px,8vw,44px)",fontWeight:900,lineHeight:1.15}}>{ag.label}</h2>
       </div>
+
+      {/* 영상 + 사진 박스 (2열) */}
+      <div style={{padding:"16px 20px 0",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+        {/* 영상 박스 */}
+        <div>
+          <div style={{fontSize:11,fontWeight:700,color:"rgba(240,236,228,.4)",textAlign:"center",marginBottom:6,letterSpacing:".1em"}}>영상</div>
+          <div style={{position:"relative",paddingTop:"177.78%",background:"#111",borderRadius:18,overflow:"hidden",border:"1px solid rgba(240,236,228,.12)"}}>
+            {videoUrl
+              ?<video src={videoUrl} autoPlay muted loop playsInline style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
+              :<div style={{position:"absolute",inset:0,background:"linear-gradient(160deg,#1d1d1d,#0d0d0d)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12}}>
+                <div style={{width:50,height:50,borderRadius:"50%",border:"1px solid rgba(240,236,228,.18)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <div style={{width:0,height:0,borderTop:"8px solid transparent",borderBottom:"8px solid transparent",borderLeft:"14px solid rgba(240,236,228,.38)",marginLeft:3}}/>
+                </div>
+                <span style={{fontSize:10,letterSpacing:".2em",color:"rgba(240,236,228,.22)",textTransform:"uppercase"}}>영상</span>
+              </div>
+            }
+            {vidLoading && <UploadOverlay prog={vidProg} text="업로드"/>}
+            {IS_ADMIN && !vidLoading && (
+              <button className="upload-btn" style={{fontSize:10,padding:"5px 10px",bottom:8}}
+                onClick={()=>vidRef.current?.click()}>
+                {videoUrl?"🎬 교체":"🎬 영상"}
+              </button>
+            )}
+          </div>
+          {vidError && <div style={{fontSize:10,color:"rgba(255,140,140,.85)",marginTop:4,textAlign:"center"}}>{vidError}</div>}
+          <input ref={vidRef} type="file" accept="video/*" style={{display:"none"}} onChange={handleVideo}/>
+        </div>
+
+        {/* 사진 박스 */}
+        <div>
+          <div style={{fontSize:11,fontWeight:700,color:"rgba(240,236,228,.4)",textAlign:"center",marginBottom:6,letterSpacing:".1em"}}>사진</div>
+          <div style={{position:"relative",paddingTop:"177.78%",background:"#111",borderRadius:18,overflow:"hidden",border:"1px solid rgba(240,236,228,.12)"}}>
+            {photoUrl
+              ?<img src={photoUrl} alt={ag.label} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
+              :<div style={{position:"absolute",inset:0,background:"linear-gradient(160deg,#1d1d1d,#0d0d0d)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12}}>
+                <div style={{width:50,height:50,border:"1px solid rgba(240,236,228,.18)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:"rgba(240,236,228,.25)"}}>+</div>
+                <span style={{fontSize:10,letterSpacing:".2em",color:"rgba(240,236,228,.22)",textTransform:"uppercase"}}>사진</span>
+              </div>
+            }
+            {imgLoading && <UploadOverlay prog={imgProg} text="업로드"/>}
+            {IS_ADMIN && !imgLoading && (
+              <button className="upload-btn" style={{fontSize:10,padding:"5px 10px",bottom:8}}
+                onClick={()=>imgRef.current?.click()}>
+                {photoUrl?"📷 교체":"📷 사진"}
+              </button>
+            )}
+          </div>
+          {imgError && <div style={{fontSize:10,color:"rgba(255,140,140,.85)",marginTop:4,textAlign:"center"}}>{imgError}</div>}
+          <input ref={imgRef} type="file" accept="image/*" style={{display:"none"}} onChange={handlePhoto}/>
+        </div>
+      </div>
+
+      {/* 카카오톡 버튼 — 노란색 */}
       <div style={{padding:"16px 20px 0"}}>
-        <a href={ag.kakao} target="_blank" rel="noopener noreferrer"
-          style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,background:"#f0ece4",color:"#0a0a0a",padding:"18px",fontSize:15,fontWeight:900,textDecoration:"none",textTransform:"uppercase",borderRadius:50,letterSpacing:".1em",transition:"opacity .2s"}}
-          onMouseEnter={e=>e.currentTarget.style.opacity=".84"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#0a0a0a"><path d="M12 3C7.03 3 3 6.36 3 10.5c0 2.56 1.48 4.83 3.74 6.26l-.95 3.54 4.1-2.04c.67.1 1.37.16 2.11.16 4.97 0 9-3.36 9-7.5S16.97 3 12 3z"/></svg>
+        <a href={kakaoUrl||ag.kakao} target="_blank" rel="noopener noreferrer"
+          style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,background:"#FEE500",color:"#0a0a0a",padding:"18px",fontSize:16,fontWeight:900,textDecoration:"none",textTransform:"uppercase",borderRadius:50,letterSpacing:".1em",transition:"opacity .2s"}}
+          onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
+          onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#0a0a0a"><path d="M12 3C7.03 3 3 6.36 3 10.5c0 2.56 1.48 4.83 3.74 6.26l-.95 3.54 4.1-2.04c.67.1 1.37.16 2.11.16 4.97 0 9-3.36 9-7.5S16.97 3 12 3z"/></svg>
           카카오톡 사입 문의하기
         </a>
-        <div style={{textAlign:"center",fontSize:9,letterSpacing:".18em",color:"rgba(240,236,228,.2)",textTransform:"uppercase",marginTop:8}}>마감 {ag.deadline}</div>
-      </div>
-      <div style={{padding:"28px 20px",display:"flex",flexDirection:"column",gap:32,textAlign:"center"}}>
-        <div>
-          <div style={{fontSize:10,letterSpacing:".32em",color:"rgba(240,236,228,.28)",textTransform:"uppercase",marginBottom:12}}>{ag.regionEn}</div>
-          <h2 style={{fontSize:"clamp(24px,7.5vw,40px)",fontWeight:900,lineHeight:1.15,marginBottom:10}}>{ag.label}</h2>
-        </div>
-        <div>
-          <div style={{fontSize:14,letterSpacing:".28em",color:"rgba(240,236,228,.26)",textTransform:"uppercase",marginBottom:14}}>Introduction</div>
-          {(ag.intro||"").split("\n").map((line,i)=>(
-            <p key={i} style={{fontSize:i===0?"clamp(17px,4.8vw,24px)":"clamp(14px,3.8vw,19px)",lineHeight:1.75,color:i===0?"rgba(240,236,228,.88)":"rgba(240,236,228,.5)",marginBottom:10,wordBreak:"keep-all"}}>{line}</p>
-          ))}
-        </div>
-        <div style={{textAlign:"left"}}>
-          <div style={{fontSize:14,letterSpacing:".28em",color:"rgba(240,236,228,.26)",textTransform:"uppercase",marginBottom:14,textAlign:"center"}}>사입 안내</div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"16px 0",borderBottom:"1px solid rgba(240,236,228,.07)"}}>
-            <span style={{fontSize:18,color:"rgba(240,236,228,.42)"}}>사입 신청 마감</span>
-            <span style={{fontSize:22,fontWeight:900,color:"rgba(240,236,228,.95)"}}>{ag.deadline}</span>
+
+        {/* 관리자: 카카오 링크 입력 */}
+        {IS_ADMIN && (
+          <div style={{marginTop:8,display:"flex",gap:6,alignItems:"center"}}>
+            <span style={{fontSize:10,color:"rgba(240,236,228,.4)",whiteSpace:"nowrap",flexShrink:0}}>카카오 링크:</span>
+            <input defaultValue={kakaoUrl||ag.kakao} placeholder="https://open.kakao.com/..."
+              onBlur={async(e)=>{
+                const val=e.target.value;
+                setKakaoUrl(val);
+                await saveToSheet(kakaoKey, val);
+                if(onDataUpdate) onDataUpdate(kakaoKey, val);
+              }}
+              style={{flex:1,background:"rgba(255,255,255,.07)",border:"1px solid rgba(240,236,228,.2)",borderRadius:10,padding:"7px 10px",fontSize:11,color:"#f0ece4",fontFamily:"inherit",outline:"none"}}/>
           </div>
-        </div>
-        <div>
-          <div style={{fontSize:14,letterSpacing:".28em",color:"rgba(240,236,228,.26)",textTransform:"uppercase",marginBottom:14}}>다른 지역 담당</div>
-          {allAgents.filter(a=>a.id!==ag.id).map(other=>(
-            <button key={other.id} onClick={()=>onAgent(other)}
-              style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",padding:"20px 24px",background:"transparent",border:"1px solid rgba(240,236,228,.12)",borderRadius:18,cursor:"pointer",fontFamily:"inherit",marginBottom:10,transition:"all .22s"}}
-              onMouseEnter={e=>{e.currentTarget.style.background="rgba(240,236,228,.06)";e.currentTarget.style.borderColor="rgba(240,236,228,.28)";}}
-              onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor="rgba(240,236,228,.12)";}}>
-              <div style={{fontSize:"clamp(16px,4.8vw,22px)",fontWeight:700,color:"rgba(240,236,228,.6)",flex:1,textAlign:"center"}}>{other.label}</div>
-              <span style={{fontSize:"clamp(20px,5.5vw,26px)",color:"rgba(240,236,228,.24)"}}>→</span>
-            </button>
-          ))}
+        )}
+      </div>
+
+      {/* 공지사항 */}
+      <div style={{padding:"14px 20px 0"}}>
+        {(notice||IS_ADMIN) && (
+          <div
+            onClick={()=>IS_ADMIN&&openEdit(noticeKey,"공지사항",notice)}
+            className={IS_ADMIN?"editable":""}
+            style={{background:"rgba(254,229,0,.1)",border:"1px solid rgba(254,229,0,.3)",borderRadius:16,padding:"12px 18px",fontSize:14,fontWeight:700,color:"#FEE500",textAlign:"center",lineHeight:1.6,cursor:IS_ADMIN?"pointer":"default"}}>
+            {notice||"📢 (공지사항을 입력하세요)"}
+          </div>
+        )}
+      </div>
+
+      {/* 소개글 */}
+      <div style={{padding:"20px 20px 0"}}>
+        <div
+          onClick={()=>IS_ADMIN&&openEdit(introKey,"소개글",intro)}
+          className={IS_ADMIN?"editable":""}
+          style={{background:"rgba(240,236,228,.03)",border:"1px solid rgba(240,236,228,.08)",borderRadius:20,padding:"20px",cursor:IS_ADMIN?"pointer":"default"}}>
+          {intro
+            ?(intro.split("\n").map((line,i)=>(
+                <p key={i} style={{fontSize:"clamp(14px,4vw,18px)",lineHeight:1.8,color:"rgba(240,236,228,.82)",marginBottom:i<intro.split("\n").length-1?8:0,wordBreak:"keep-all"}}>{line}</p>
+              )))
+            :<p style={{fontSize:14,color:"rgba(240,236,228,.3)",textAlign:"center"}}>{IS_ADMIN?"(소개글을 클릭해서 입력하세요)":"소개글이 없습니다."}</p>
+          }
         </div>
       </div>
-      <div style={{height:36}}/>
+
+      {/* 다른 지역 담당 */}
+      <div style={{padding:"28px 20px 0"}}>
+        <div style={{fontSize:13,letterSpacing:".2em",color:"rgba(240,236,228,.26)",textTransform:"uppercase",marginBottom:14,textAlign:"center"}}>다른 지역 담당</div>
+        {allAgents.filter(a=>a.id!==ag.id).map(other=>(
+          <button key={other.id} onClick={()=>onAgent(other)}
+            style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",padding:"20px 24px",background:"#FEE500",border:"none",borderRadius:18,cursor:"pointer",fontFamily:"inherit",marginBottom:10,transition:"all .22s"}}
+            onMouseEnter={e=>{e.currentTarget.style.filter="brightness(1.06)";}}
+            onMouseLeave={e=>{e.currentTarget.style.filter="brightness(1)";}}>
+            <div style={{fontSize:"clamp(16px,4.8vw,22px)",fontWeight:900,color:"#0a0a0a",flex:1,textAlign:"center"}}>{other.label}</div>
+            <span style={{fontSize:"clamp(20px,5.5vw,26px)",color:"#0a0a0a"}}>→</span>
+          </button>
+        ))}
+      </div>
+
+      <div style={{height:48}}/>
+
+      {editField && (
+        <EditModal label={editField.label} value={editField.value}
+          onSave={val=>handleSave(editField.key,val)}
+          onClose={()=>setEditField(null)}/>
+      )}
     </div>
   );
 }
@@ -773,7 +925,9 @@ function App(){
       <div className="fade-in" key={page}>
         {page==="main"
           ?<MainPage onAgent={goAgent} onChat={()=>setChatOpen(true)}/>
-          :<AgentPage ag={ag} onBack={goMain} allAgents={allAgents} onAgent={goAgent}/>
+          :<AgentPage ag={ag} onBack={goMain} allAgents={allAgents} onAgent={goAgent}
+              sheetData={data}
+              onDataUpdate={(key,val)=>setData(d=>({...d,[key]:val}))}/>
         }
       </div>
 
