@@ -369,15 +369,15 @@ function MediaBox({videoUrl, photoUrl, onUpload, loading, prog, error}){
 
         {loading && <UploadOverlay prog={prog} text="업로드 중"/>}
 
-        {/* 영상일 때 소리 버튼 — 오른쪽 아래, 검정 반투명 */}
+        {/* 소리 버튼 — 오른쪽 아래, 검정 반투명, 크게 */}
         {videoUrl && !loading && (
           <button onClick={toggleMute}
-            style={{position:"absolute",bottom:10,right:10,background:"rgba(0,0,0,.65)",border:"none",borderRadius:20,padding:"6px 12px",cursor:"pointer",display:"flex",alignItems:"center",gap:5,zIndex:3,backdropFilter:"blur(4px)"}}>
+            style={{position:"absolute",bottom:12,right:12,background:"rgba(0,0,0,.72)",border:"none",borderRadius:22,padding:"8px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:6,zIndex:3,backdropFilter:"blur(4px)"}}>
             {muted
-              ?<><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-                <span style={{fontSize:10,color:"#fff",fontWeight:700,letterSpacing:".02em"}}>탭→소리켜짐</span></>
-              :<><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><path d="M15.54,8.46a5,5,0,0,1,0,7.07"/></svg>
-                <span style={{fontSize:10,color:"#fff",fontWeight:700,letterSpacing:".02em"}}>탭→음소거</span></>
+              ?<><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+                <span style={{fontSize:13,color:"#fff",fontWeight:900,letterSpacing:".02em"}}>탭→소리켜짐</span></>
+              :<><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><path d="M15.54,8.46a5,5,0,0,1,0,7.07"/></svg>
+                <span style={{fontSize:13,color:"#fff",fontWeight:900,letterSpacing:".02em"}}>탭→음소거</span></>
             }
           </button>
         )}
@@ -774,8 +774,20 @@ function AgentPage({ag, onBack, allAgents, onAgent, sheetData, onDataUpdate}){
   const [kakaoUrl, setKakaoUrl] = useState("");
   const [editField,setEditField] = useState(null);
 
+  // 영상 업로드 상태
+  const [vidProg,    setVidProg   ] = useState(0);
+  const [vidLoading, setVidLoading] = useState(false);
+  const [vidError,   setVidError  ] = useState("");
+
+  // 사진 업로드 상태
+  const [imgProg,    setImgProg   ] = useState(0);
+  const [imgLoading, setImgLoading] = useState(false);
+  const [imgError,   setImgError  ] = useState("");
+
   // 팀 바뀔 때마다 상태 초기화 — 강북→인천 이동 시 영상 섞임 방지
+  const [pageReady, setPageReady] = useState(false);
   useEffect(()=>{
+    setPageReady(false);
     setVideoUrl(sheetData[videoKey]||"");
     setPhotoUrl(sheetData[photoKey]||"");
     setIntro(sheetData[introKey]||ag.intro||"");
@@ -783,6 +795,7 @@ function AgentPage({ag, onBack, allAgents, onAgent, sheetData, onDataUpdate}){
     setKakaoUrl(sheetData[kakaoKey]||ag.kakao||"");
     setEditField(null);
     window.scrollTo({top:0});
+    setTimeout(()=>setPageReady(true), 100);
   },[ag.id]);
 
   const handleVideo = async(e)=>{
@@ -816,6 +829,13 @@ function AgentPage({ag, onBack, allAgents, onAgent, sheetData, onDataUpdate}){
     await saveToSheet(key,val);
     if(onDataUpdate) onDataUpdate(key,val);
   };
+
+  if(!pageReady) return(
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16}}>
+      <div style={{width:40,height:40,border:"3px solid rgba(240,236,228,.15)",borderTop:"3px solid #FEE500",borderRadius:"50%",animation:"spin .8s linear infinite"}}/>
+      <div style={{fontSize:12,color:"rgba(240,236,228,.4)",letterSpacing:".1em"}}>로딩 중...</div>
+    </div>
+  );
 
   return(
     <div className="fade-in">
