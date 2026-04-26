@@ -325,6 +325,55 @@ function VideoBox({url, titleRef, onSave}){
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   미디어 박스 — 1칸에 영상 또는 사진
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function MediaBox({videoUrl, photoUrl, onUpload, loading, prog, error}){
+  const fileRef = useRef(null);
+  const hasMedia = videoUrl || photoUrl;
+
+  return(
+    <div>
+      <div className="lcard" style={{cursor:"default"}}>
+        <div className="lcard-inner">
+          {videoUrl
+            ?<video src={videoUrl} autoPlay muted loop playsInline style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
+            :photoUrl
+              ?<img src={photoUrl} alt="팀 미디어" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
+              :<>
+                <div style={{width:56,height:56,border:"1px solid rgba(240,236,228,.15)",borderRadius:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,color:"rgba(240,236,228,.2)"}}>+</div>
+                <span style={{fontSize:11,letterSpacing:".2em",color:"rgba(240,236,228,.22)",textTransform:"uppercase"}}>사진 또는 영상</span>
+              </>
+          }
+        </div>
+        {loading && <UploadOverlay prog={prog} text="업로드 중"/>}
+
+        {/* 관리자 업로드 버튼 */}
+        {IS_ADMIN && !loading && (
+          <button className="upload-btn"
+            onClick={()=>fileRef.current?.click()}
+            style={{bottom:10,fontSize:12,padding:"8px 20px"}}>
+            {hasMedia ? "📁 교체하기" : "📁 사진 / 영상 올리기"}
+          </button>
+        )}
+      </div>
+
+      {/* 현재 미디어 타입 표시 (관리자) */}
+      {IS_ADMIN && hasMedia && (
+        <div style={{textAlign:"center",marginTop:6,fontSize:11,color:"rgba(240,236,228,.4)"}}>
+          현재: {videoUrl?"🎬 영상":"📷 사진"} 올라가 있음
+        </div>
+      )}
+
+      {error && <div style={{marginTop:6,fontSize:11,color:"rgba(255,140,140,.85)",textAlign:"center",lineHeight:1.5}}>{error}</div>}
+
+      {/* 사진/영상 모두 받는 파일 입력 */}
+      <input ref={fileRef} type="file" accept="image/*,video/*" style={{display:"none"}}
+        onChange={e=>{ const f=e.target.files[0]; if(f&&onUpload) onUpload(f); e.target.value=""; }}/>
+    </div>
+  );
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    룩북 카드
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function LookCard({look, onImageSaved, onClick}){
@@ -754,55 +803,37 @@ function AgentPage({ag, onBack, allAgents, onAgent, sheetData, onDataUpdate}){
         <h2 style={{fontSize:"clamp(28px,8vw,44px)",fontWeight:900,lineHeight:1.15}}>{ag.label}</h2>
       </div>
 
-      {/* 영상 + 사진 박스 (2열) */}
-      <div style={{padding:"16px 20px 0",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-        {/* 영상 박스 */}
-        <div>
-          <div style={{fontSize:11,fontWeight:700,color:"rgba(240,236,228,.4)",textAlign:"center",marginBottom:6,letterSpacing:".1em"}}>영상</div>
-          <div style={{position:"relative",paddingTop:"177.78%",background:"#111",borderRadius:18,overflow:"hidden",border:"1px solid rgba(240,236,228,.12)"}}>
-            {videoUrl
-              ?<video src={videoUrl} autoPlay muted loop playsInline style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
-              :<div style={{position:"absolute",inset:0,background:"linear-gradient(160deg,#1d1d1d,#0d0d0d)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12}}>
-                <div style={{width:50,height:50,borderRadius:"50%",border:"1px solid rgba(240,236,228,.18)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  <div style={{width:0,height:0,borderTop:"8px solid transparent",borderBottom:"8px solid transparent",borderLeft:"14px solid rgba(240,236,228,.38)",marginLeft:3}}/>
-                </div>
-                <span style={{fontSize:10,letterSpacing:".2em",color:"rgba(240,236,228,.22)",textTransform:"uppercase"}}>영상</span>
-              </div>
+      {/* 미디어 박스 — 1칸, 영상 또는 사진 */}
+      <div style={{padding:"16px 20px 0"}}>
+        <MediaBox
+          videoUrl={videoUrl}
+          photoUrl={photoUrl}
+          onUpload={async(file)=>{
+            const isVideo = file.type.startsWith("video/");
+            const type    = isVideo ? "video" : "image";
+            const key     = isVideo ? videoKey : photoKey;
+            if(isVideo){ setVidError(""); setVidLoading(true); setVidProg(0); }
+            else        { setImgError(""); setImgLoading(true); setImgProg(0); }
+            try{
+              const url = await uploadFile(file, type, isVideo?setVidProg:setImgProg);
+              if(isVideo){ setVideoUrl(url); setPhotoUrl(""); }
+              else        { setPhotoUrl(url); setVideoUrl(""); }
+              await saveToSheet(key, url);
+              // 이전 미디어 키 비우기
+              await saveToSheet(isVideo?photoKey:videoKey, "");
+              if(onDataUpdate){ onDataUpdate(key,url); onDataUpdate(isVideo?photoKey:videoKey,""); }
+            }catch(err){
+              if(isVideo) setVidError(err.message);
+              else        setImgError(err.message);
+            }finally{
+              if(isVideo) setVidLoading(false);
+              else        setImgLoading(false);
             }
-            {vidLoading && <UploadOverlay prog={vidProg} text="업로드"/>}
-            {IS_ADMIN && !vidLoading && (
-              <button className="upload-btn" style={{fontSize:10,padding:"5px 10px",bottom:8}}
-                onClick={()=>vidRef.current?.click()}>
-                {videoUrl?"🎬 교체":"🎬 영상"}
-              </button>
-            )}
-          </div>
-          {vidError && <div style={{fontSize:10,color:"rgba(255,140,140,.85)",marginTop:4,textAlign:"center"}}>{vidError}</div>}
-          <input ref={vidRef} type="file" accept="video/*" style={{display:"none"}} onChange={handleVideo}/>
-        </div>
-
-        {/* 사진 박스 */}
-        <div>
-          <div style={{fontSize:11,fontWeight:700,color:"rgba(240,236,228,.4)",textAlign:"center",marginBottom:6,letterSpacing:".1em"}}>사진</div>
-          <div style={{position:"relative",paddingTop:"177.78%",background:"#111",borderRadius:18,overflow:"hidden",border:"1px solid rgba(240,236,228,.12)"}}>
-            {photoUrl
-              ?<img src={photoUrl} alt={ag.label} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
-              :<div style={{position:"absolute",inset:0,background:"linear-gradient(160deg,#1d1d1d,#0d0d0d)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12}}>
-                <div style={{width:50,height:50,border:"1px solid rgba(240,236,228,.18)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:"rgba(240,236,228,.25)"}}>+</div>
-                <span style={{fontSize:10,letterSpacing:".2em",color:"rgba(240,236,228,.22)",textTransform:"uppercase"}}>사진</span>
-              </div>
-            }
-            {imgLoading && <UploadOverlay prog={imgProg} text="업로드"/>}
-            {IS_ADMIN && !imgLoading && (
-              <button className="upload-btn" style={{fontSize:10,padding:"5px 10px",bottom:8}}
-                onClick={()=>imgRef.current?.click()}>
-                {photoUrl?"📷 교체":"📷 사진"}
-              </button>
-            )}
-          </div>
-          {imgError && <div style={{fontSize:10,color:"rgba(255,140,140,.85)",marginTop:4,textAlign:"center"}}>{imgError}</div>}
-          <input ref={imgRef} type="file" accept="image/*" style={{display:"none"}} onChange={handlePhoto}/>
-        </div>
+          }}
+          loading={vidLoading||imgLoading}
+          prog={vidLoading?vidProg:imgProg}
+          error={vidError||imgError}
+        />
       </div>
 
       {/* 카카오톡 버튼 — 노란색 */}
