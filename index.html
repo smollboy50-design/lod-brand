@@ -11,8 +11,6 @@
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     html,body{background:#0a0a0a;color:#f0ece4;font-family:'Noto Sans KR',sans-serif;overflow-x:hidden;min-height:100%;}
-
-    /* ── 600px 에이블리 컨테이너 ── */
     #root{display:flex;justify-content:center;min-height:100vh;background:#0a0a0a;}
     .shell{width:100%;max-width:600px;min-height:100vh;background:#0a0a0a;position:relative;box-shadow:1px 0 0 rgba(240,236,228,.07),-1px 0 0 rgba(240,236,228,.07);}
 
@@ -20,7 +18,6 @@
     ::-webkit-scrollbar-thumb{background:rgba(240,236,228,.18);border-radius:2px;}
 
     @keyframes fadeIn  {from{opacity:0}to{opacity:1}}
-    @keyframes slideUp {from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
     @keyframes pulse   {0%,100%{box-shadow:0 0 0 0 rgba(254,229,0,.55)}60%{box-shadow:0 0 0 18px rgba(254,229,0,0)}}
     @keyframes dotB    {0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
     @keyframes spin    {to{transform:rotate(360deg)}}
@@ -30,11 +27,7 @@
     .chat-pulse:hover{animation-play-state:paused;}
     .float-pulse{animation:pulse 2s ease-in-out infinite;}
 
-    /* NAV */
     .nav{position:sticky;top:0;z-index:200;width:100%;display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:68px;background:rgba(10,10,10,.96);backdrop-filter:blur(18px);border-bottom:1px solid rgba(240,236,228,.08);border-radius:0 0 20px 20px;}
-
-    /* 관리자 배지 */
-    .admin-badge{background:#FEE500;color:#0a0a0a;font-size:10px;font-weight:900;padding:3px 10px;border-radius:20px;letter-spacing:.06em;}
 
     /* 영상 박스 */
     .vbox-outer{display:flex;justify-content:center;width:100%;}
@@ -42,44 +35,33 @@
     .vbox video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
     .vbox-ph{position:absolute;inset:0;background:linear-gradient(160deg,#1d1d1d,#0d0d0d);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;}
 
-    /* 업로드 버튼 공통 */
+    /* 업로드 */
     .upload-btn{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(254,229,0,.93);color:#0a0a0a;border:none;border-radius:20px;padding:7px 16px;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap;z-index:3;letter-spacing:.04em;font-family:inherit;}
-    .upload-btn:active{opacity:.8;}
-
-    /* 프로그레스 오버레이 */
     .progress-overlay{position:absolute;inset:0;background:rgba(0,0,0,.82);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:4;border-radius:inherit;}
     .progress-bar-wrap{width:72%;height:6px;background:rgba(255,255,255,.18);border-radius:3px;overflow:hidden;}
     .progress-bar-fill{height:100%;background:#FEE500;border-radius:3px;transition:width .25s;}
 
-    /* 룩북 카드 */
+    /* 룩북 */
     .lcard{position:relative;padding-top:177.78%;background:#111;border:1px solid rgba(240,236,228,.1);border-radius:18px;overflow:hidden;cursor:pointer;transition:border-color .3s;}
     .lcard:hover{border-color:rgba(240,236,228,.28);}
     .lcard-inner{position:absolute;inset:0;background:#141414;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:background .3s;}
     .lcard:hover .lcard-inner{background:#1c1c1c;}
-    .lcard-info{position:absolute;bottom:0;left:0;right:0;padding:10px;opacity:0;transition:opacity .3s;pointer-events:none;background:linear-gradient(to top,rgba(0,0,0,.72) 0%,transparent 55%);}
-    .lcard:hover .lcard-info{opacity:1;}
-
-    /* 인라인 편집 (관리자 모드) */
-    .editable{position:relative;cursor:text;}
-    .editable:hover .edit-hint{opacity:1;}
-    .edit-hint{position:absolute;top:-22px;left:50%;transform:translateX(-50%);background:#FEE500;color:#0a0a0a;font-size:9px;font-weight:900;padding:2px 8px;border-radius:10px;white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none;letter-spacing:.06em;}
-    .edit-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px;}
-    .edit-modal{background:#1a1a1a;border:1px solid rgba(240,236,228,.18);border-radius:20px;padding:24px;width:100%;max-width:520px;}
-    .edit-modal h3{font-size:14px;font-weight:700;color:#f0ece4;margin-bottom:14px;letter-spacing:.06em;}
-    .edit-textarea{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(240,236,228,.2);border-radius:10px;padding:12px 14px;font-size:14px;color:#f0ece4;font-family:inherit;outline:none;resize:vertical;min-height:80px;line-height:1.6;}
-    .edit-textarea::placeholder{color:rgba(240,236,228,.3);}
-    .edit-save-btn{background:#FEE500;color:#0a0a0a;border:none;border-radius:10px;padding:11px 24px;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;transition:opacity .2s;}
-    .edit-save-btn:hover{opacity:.85;}
-    .edit-cancel-btn{background:transparent;border:1px solid rgba(240,236,228,.2);color:rgba(240,236,228,.55);border-radius:10px;padding:11px 18px;font-size:13px;cursor:pointer;font-family:inherit;transition:all .2s;margin-left:8px;}
-    .edit-cancel-btn:hover{border-color:rgba(240,236,228,.4);color:#f0ece4;}
-    .saving-indicator{font-size:11px;color:#FEE500;margin-top:8px;display:flex;align-items:center;gap:6px;}
-    .spinner-sm{width:12px;height:12px;border:2px solid rgba(254,229,0,.3);border-top-color:#FEE500;border-radius:50%;animation:spin .7s linear infinite;}
 
     /* 지역 버튼 */
     .rbtn{display:flex;align-items:center;justify-content:space-between;width:100%;border:none;border-radius:20px;cursor:pointer;font-family:inherit;transition:transform .2s,filter .2s;padding:26px 28px;background:#FEE500;}
     .rbtn:hover{transform:scale(1.01);filter:brightness(1.06);}
 
-    /* 스텝 */
+    /* 관리자 편집 */
+    .editable{cursor:pointer;position:relative;}
+    .editable::after{content:"✏️";position:absolute;top:-20px;left:50%;transform:translateX(-50%);background:#FEE500;color:#0a0a0a;font-size:9px;font-weight:900;padding:2px 8px;border-radius:10px;white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none;}
+    .editable:hover::after{opacity:1;}
+
+    /* 편집 모달 */
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px;}
+    .modal-box{background:#1a1a1a;border:1px solid rgba(240,236,228,.18);border-radius:20px;padding:24px;width:100%;max-width:520px;}
+    .modal-textarea{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(240,236,228,.2);border-radius:10px;padding:12px 14px;font-size:14px;color:#f0ece4;font-family:inherit;outline:none;resize:vertical;min-height:80px;line-height:1.6;}
+    .modal-textarea::placeholder{color:rgba(240,236,228,.3);}
+
     .steps-row{display:flex;align-items:center;overflow-x:auto;padding-bottom:2px;justify-content:center;}
     .steps-row::-webkit-scrollbar{display:none;}
 
@@ -94,14 +76,13 @@
 const {useState,useEffect,useRef,useCallback} = React;
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   🔧 설정값 — 여기만 수정하세요
+   🔧 설정값
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const CLOUDINARY_CLOUD  = "ddjdyn0yj";
 const CLOUDINARY_PRESET = "lod_unsigned";
-const SHEET_ID          = "1CPmke1eFCcKBlKykXJHyu3ngS6eL9l1uZ5JS9964Do4";
 const APPS_SCRIPT_URL   = "https://script.google.com/macros/s/AKfycbziQ2M5B33SVIRi19e3o9CDKMjhZ0YzDnouiu3Ye02bUaTAQoJ2o1mapPtAsbYWZyBp/exec";
 const MAIN_KAKAO        = "https://open.kakao.com/LOD_MAIN";
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const IS_ADMIN          = new URLSearchParams(location.search).get("admin") === "true";
 
 /* 기본값 */
 const DEFAULTS = {
@@ -120,131 +101,91 @@ const DEFAULTS = {
   "룩북2_URL":      "",
   "룩북3_URL":      "",
   "룩북4_URL":      "",
-  "kakao_link":     "",
 };
 
 const STEPS = ["사입 신청","현장 픽업","지역별 분류","안전 배송"];
 const LOOKS_INIT = [
-  {id:1,label:"EDITORIAL 01",style:"MINIMAL CHIC",   url:""},
-  {id:2,label:"EDITORIAL 02",style:"OVERFIT STREET", url:""},
-  {id:3,label:"EDITORIAL 03",style:"MODERN CLASSIC", url:""},
-  {id:4,label:"EDITORIAL 04",style:"URBAN CASUAL",   url:""},
+  {id:1,label:"EDITORIAL 01",style:"MINIMAL CHIC"},
+  {id:2,label:"EDITORIAL 02",style:"OVERFIT STREET"},
+  {id:3,label:"EDITORIAL 03",style:"MODERN CLASSIC"},
+  {id:4,label:"EDITORIAL 04",style:"URBAN CASUAL"},
 ];
 const SYS = `당신은 동대문 새벽시장 전문 사입 서비스 'L O D'의 24시간 AI 비서입니다. 사입, 동대문 시장, 패션 트렌드에 대해 친절하고 전문적으로 2-4문장, 한국어로만 답변하세요.`;
 
-/* ── 관리자 모드 감지 ── */
-const IS_ADMIN = new URLSearchParams(location.search).get("admin") === "true";
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   시트 읽기 (JSONP)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function loadSheet(callback){
+  const name = "cb_" + Date.now();
+  const s = document.createElement("script");
+  s.src = APPS_SCRIPT_URL + "?callback=" + name + "&t=" + Date.now();
+  window[name] = (res)=>{
+    delete window[name];
+    document.body.removeChild(s);
+    if(res && res.status === "ok") callback({...DEFAULTS, ...res.data});
+    else callback({...DEFAULTS});
+  };
+  s.onerror = ()=>{ delete window[name]; document.body.removeChild(s); callback({...DEFAULTS}); };
+  document.body.appendChild(s);
+}
 
-/* ── 구글 시트 자동 저장 (JSONP 방식) ── */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   시트 저장 (JSONP GET)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function saveToSheet(key, value){
-  if(!APPS_SCRIPT_URL) return Promise.resolve();
-  return new Promise((resolve)=>{
-    const callbackName = "lodSave_" + Date.now();
-    const script = document.createElement("script");
-    const params = new URLSearchParams({
-      callback: callbackName,
-      action: "update",
-      key: key,
-      value: value,
-      t: Date.now()
-    });
-    script.src = APPS_SCRIPT_URL + "?" + params.toString();
-
-    window[callbackName] = (res)=>{
-      console.log("시트 저장 완료:", key, res);
-      delete window[callbackName];
-      if(document.body.contains(script)) document.body.removeChild(script);
+  return new Promise(resolve=>{
+    const name = "save_" + Date.now();
+    const s = document.createElement("script");
+    const p = new URLSearchParams({callback:name, action:"update", key, value, t:Date.now()});
+    s.src = APPS_SCRIPT_URL + "?" + p.toString();
+    window[name] = (res)=>{
+      delete window[name];
+      if(document.body.contains(s)) document.body.removeChild(s);
       resolve(res);
     };
-    script.onerror = ()=>{
-      console.warn("시트 저장 실패:", key);
-      delete window[callbackName];
-      if(document.body.contains(script)) document.body.removeChild(script);
-      resolve(null);
-    };
-    setTimeout(()=>{
-      if(window[callbackName]){
-        delete window[callbackName];
-        if(document.body.contains(script)) document.body.removeChild(script);
-        resolve(null);
-      }
-    }, 10000);
-    document.body.appendChild(script);
+    s.onerror = ()=>{ delete window[name]; if(document.body.contains(s)) document.body.removeChild(s); resolve(null); };
+    setTimeout(()=>{ if(window[name]){ delete window[name]; if(document.body.contains(s)) document.body.removeChild(s); resolve(null); }}, 8000);
+    document.body.appendChild(s);
   });
 }
 
-/* ── Cloudinary 업로드 (안정적, 진행률 포함) ── */
-async function uploadToCloudinary(file, resourceType, onProgress){
-  // 파일 크기 검사 (영상 500MB, 이미지 20MB)
-  const maxSize = resourceType==="video" ? 500*1024*1024 : 20*1024*1024;
-  if(file.size > maxSize){
-    const mb = (maxSize/1024/1024).toFixed(0);
-    throw new Error(`파일이 너무 큽니다. ${mb}MB 이하 파일을 사용해 주세요.\n현재 파일: ${(file.size/1024/1024).toFixed(1)}MB`);
-  }
-
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Cloudinary 업로드
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function uploadFile(file, type, onProgress){
+  const max = type==="video" ? 500*1024*1024 : 20*1024*1024;
+  if(file.size > max) return Promise.reject(new Error(`파일이 너무 큽니다. ${type==="video"?"500MB":"20MB"} 이하로 해주세요.`));
   return new Promise((resolve, reject)=>{
     const fd = new FormData();
     fd.append("file", file);
     fd.append("upload_preset", CLOUDINARY_PRESET);
-
     const xhr = new XMLHttpRequest();
-    xhr.upload.onprogress = ev=>{
-      if(ev.lengthComputable && onProgress)
-        onProgress(Math.round(ev.loaded/ev.total*100));
-    };
+    xhr.upload.onprogress = e=>{ if(e.lengthComputable && onProgress) onProgress(Math.round(e.loaded/e.total*100)); };
     xhr.onload = ()=>{
-      try{
-        const res = JSON.parse(xhr.responseText);
-        if(res.secure_url) resolve(res.secure_url);
-        else reject(new Error("업로드 실패: 서버 오류\n" + (res.error?.message||"")));
-      }catch{ reject(new Error("응답 파싱 오류")); }
+      const res = JSON.parse(xhr.responseText);
+      if(res.secure_url) resolve(res.secure_url);
+      else reject(new Error("업로드 실패: " + (res.error?.message||"서버 오류")));
     };
-    xhr.onerror  = ()=> reject(new Error("인터넷 연결을 확인해 주세요."));
-    xhr.ontimeout= ()=> reject(new Error("시간 초과. 와이파이에서 다시 시도해 주세요."));
-    xhr.timeout  = 5 * 60 * 1000; // 5분
-    xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/${resourceType}/upload`);
+    xhr.onerror  = ()=>reject(new Error("인터넷 연결을 확인해 주세요."));
+    xhr.ontimeout= ()=>reject(new Error("시간 초과. 다시 시도해 주세요."));
+    xhr.timeout  = 5*60*1000;
+    xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/${type}/upload`);
     xhr.send(fd);
   });
 }
 
-/* ── HOOKS ── */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   HOOKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function useClock(){
   const [t,setT]=useState(new Date());
   useEffect(()=>{const id=setInterval(()=>setT(new Date()),1000);return()=>clearInterval(id);},[]);
   return t.toLocaleTimeString("ko-KR",{hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit"});
 }
-function useSheetData(){
-  const [data,setData]=useState(DEFAULTS);
-  const [loading,setLoading]=useState(false);
 
-  useEffect(()=>{
-    setLoading(true);
-    const cbName = "lod_" + Date.now();
-    const script = document.createElement("script");
-    script.src = APPS_SCRIPT_URL + "?callback=" + cbName;
-
-    window[cbName] = function(json){
-      if(json && json.data){
-        setData(prev=>({...prev,...json.data}));
-      }
-      delete window[cbName];
-      if(script.parentNode) script.parentNode.removeChild(script);
-      setLoading(false);
-    };
-
-    script.onerror = function(){
-      delete window[cbName];
-      if(script.parentNode) script.parentNode.removeChild(script);
-      setLoading(false);
-    };
-
-    document.head.appendChild(script);
-  },[]);
-
-  return {data,setData,loading};
-}
-
-/* ── LD LOGO ── */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   LD LOGO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function LDLogo({size=54,a=1}){
   return(
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none" style={{opacity:a,flexShrink:0}}>
@@ -254,125 +195,77 @@ function LDLogo({size=54,a=1}){
   );
 }
 
-/* ── 인라인 편집 모달 ── */
-function EditModal({fieldKey, label, value, onSave, onClose}){
-  const [val,setVal]=useState(value);
-  const [saving,setSaving]=useState(false);
-  const save=async()=>{
-    setSaving(true);
-    await saveToSheet(fieldKey, val);
-    onSave(fieldKey, val);
-    setSaving(false);
-    onClose();
-  };
-  return(
-    <div className="edit-modal-bg" onClick={onClose}>
-      <div className="edit-modal" onClick={e=>e.stopPropagation()}>
-        <h3>✏️ {label} 수정</h3>
-        <textarea className="edit-textarea" value={val} onChange={e=>setVal(e.target.value)} autoFocus/>
-        {saving && <div className="saving-indicator"><div className="spinner-sm"/><span>시트에 저장 중...</span></div>}
-        <div style={{marginTop:14,display:"flex",alignItems:"center"}}>
-          <button className="edit-save-btn" onClick={save} disabled={saving}>저장</button>
-          <button className="edit-cancel-btn" onClick={onClose}>취소</button>
-        </div>
-        {!APPS_SCRIPT_URL && <div style={{marginTop:10,fontSize:10,color:"rgba(240,236,228,.35)",lineHeight:1.6}}>⚠️ Apps Script 미설정 — 화면에만 적용됩니다. 구글 시트 자동 저장을 원하시면 APPS_SCRIPT_URL을 설정하세요.</div>}
-      </div>
-    </div>
-  );
-}
-
-/* ── 편집 가능 텍스트 컴포넌트 ── */
-function Editable({fieldKey, label, value, style:sx, className, onEdit, tag:Tag="div"}){
-  if(!IS_ADMIN) return <Tag style={sx} className={className}>{value}</Tag>;
-  return(
-    <Tag style={{...sx,position:"relative"}} className={className}
-      onClick={()=>onEdit(fieldKey, label, value)}
-      title={`클릭해서 '${label}' 수정`}>
-      <span className="edit-hint">✏️ 클릭해서 수정</span>
-      {value}
-    </Tag>
-  );
-}
-
-/* ── 업로드 박스 공통 ── */
-function UploadOverlay({progress, text}){
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   업로드 진행 오버레이
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function UploadOverlay({prog, text}){
   return(
     <div className="progress-overlay">
-      <div style={{fontSize:13,color:"#f0ece4",fontWeight:700}}>{text} {progress}%</div>
-      <div className="progress-bar-wrap">
-        <div className="progress-bar-fill" style={{width:progress+"%"}}/>
-      </div>
+      <div style={{fontSize:13,color:"#f0ece4",fontWeight:700}}>{text} {prog}%</div>
+      <div className="progress-bar-wrap"><div className="progress-bar-fill" style={{width:prog+"%"}}/></div>
     </div>
   );
 }
 
-/* ── 영상 박스 ── */
-function VideoBox({videoUrl, titleRef, sheetKey}){
-  const boxRef   = useRef(null);
-  const fileRef  = useRef(null);
-  const videoRef = useRef(null);
-  const [src,setSrc]           = useState(videoUrl||"");
-  const [prog,setProg]         = useState(0);
-  const [uploading,setUploading] = useState(false);
-  const [error,setError]       = useState("");
-  const [playing,setPlaying]   = useState(true);
-  const [muted,setMuted]       = useState(true);
-  const [volume,setVolume]     = useState(0.7);
-  const [showVol,setShowVol]   = useState(false);
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   영상 박스
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function VideoBox({url, titleRef, onSave}){
+  const boxRef  = useRef(null);
+  const fileRef = useRef(null);
+  const vidRef  = useRef(null);
+  const [src,setSrc]       = useState(url||"");
+  const [prog,setProg]     = useState(0);
+  const [loading,setLoading] = useState(false);
+  const [error,setError]   = useState("");
+  const [muted,setMuted]   = useState(true);
+  const [playing,setPlaying] = useState(true);
 
-  useEffect(()=>{ if(videoUrl) setSrc(videoUrl); },[videoUrl]);
+  useEffect(()=>{ if(url) setSrc(url); },[url]);
 
   /* 타이틀 폭 맞춤 */
   useEffect(()=>{
     const sync=()=>{
-      if(!titleRef?.current||!boxRef.current)return;
-      const w=titleRef.current.getBoundingClientRect().width;
-      if(w>0) boxRef.current.style.width=w+"px";
+      if(!titleRef?.current||!boxRef.current) return;
+      const w = titleRef.current.getBoundingClientRect().width;
+      if(w>0) boxRef.current.style.width = w+"px";
     };
     sync();
-    const ro=new ResizeObserver(sync);
+    const ro = new ResizeObserver(sync);
     if(titleRef?.current) ro.observe(titleRef.current);
-    window.addEventListener("resize",sync);
+    window.addEventListener("resize", sync);
     document.fonts?.ready.then(sync);
-    return()=>{ro.disconnect();window.removeEventListener("resize",sync);};
+    return()=>{ro.disconnect(); window.removeEventListener("resize",sync);};
   },[titleRef]);
 
-  const togglePlay=()=>{
-    if(!videoRef.current)return;
-    if(playing){ videoRef.current.pause(); setPlaying(false); }
-    else { videoRef.current.play(); setPlaying(true); }
-  };
-  const toggleMute=()=>{
-    if(!videoRef.current)return;
-    const next=!muted;
-    videoRef.current.muted=next;
-    setMuted(next);
-  };
-  const changeVolume=(v)=>{
-    if(!videoRef.current)return;
-    videoRef.current.volume=v;
-    videoRef.current.muted=v===0;
-    setVolume(v);
-    setMuted(v===0);
+  const handleFile = async(e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    setError(""); setLoading(true); setProg(0);
+    try{
+      const newUrl = await uploadFile(file, "video", setProg);
+      setSrc(newUrl);
+      await saveToSheet("메인 영상 URL", newUrl);
+      if(onSave) onSave("메인 영상 URL", newUrl);
+    }catch(err){ setError(err.message); }
+    finally{ setLoading(false); e.target.value=""; }
   };
 
-  const handleFile=async(e)=>{
-    const file=e.target.files[0]; if(!file)return;
-    setError(""); setUploading(true); setProg(0);
-    try{
-      const url=await uploadToCloudinary(file,"video",setProg);
-      setSrc(url);
-      await saveToSheet(sheetKey||"메인 영상 URL", url);
-    }catch(err){ setError(err.message); }
-    finally{ setUploading(false); e.target.value=""; }
+  const togglePlay=()=>{
+    if(!vidRef.current) return;
+    if(playing){ vidRef.current.pause(); setPlaying(false); }
+    else{ vidRef.current.play(); setPlaying(true); }
+  };
+  const toggleMute=()=>{
+    if(!vidRef.current) return;
+    vidRef.current.muted = !muted;
+    setMuted(!muted);
   };
 
   return(
     <div className="vbox-outer">
       <div className="vbox" ref={boxRef}>
         {src
-          ?<video ref={videoRef} src={src} autoPlay muted loop playsInline
-              style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
+          ?<video ref={vidRef} src={src} autoPlay muted loop playsInline style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
           :<div className="vbox-ph">
             <div style={{width:76,height:76,borderRadius:"50%",border:"1px solid rgba(240,236,228,.18)",display:"flex",alignItems:"center",justifyContent:"center"}}>
               <div style={{width:0,height:0,borderTop:"11px solid transparent",borderBottom:"11px solid transparent",borderLeft:"18px solid rgba(240,236,228,.38)",marginLeft:5}}/>
@@ -380,82 +273,67 @@ function VideoBox({videoUrl, titleRef, sheetKey}){
             <span style={{fontSize:11,letterSpacing:".34em",color:"rgba(240,236,228,.22)",textTransform:"uppercase"}}>L O D FILM</span>
           </div>
         }
+        {loading && <UploadOverlay prog={prog} text="업로드 중"/>}
 
-        {uploading && <UploadOverlay progress={prog} text="업로드 중"/>}
-
-        {/* ── 컨트롤바 ── */}
-        {src && !uploading && (
-          <div style={{position:"absolute",bottom:0,left:0,right:0,background:"linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 100%)",padding:"32px 14px 12px",display:"flex",alignItems:"center",gap:10,zIndex:3}}>
-            {/* 재생/정지 */}
-            <button onClick={togglePlay}
-              style={{background:"rgba(255,255,255,.18)",border:"none",borderRadius:"50%",width:36,height:36,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,backdropFilter:"blur(4px)"}}>
+        {/* 컨트롤바 */}
+        {src && !loading && (
+          <div style={{position:"absolute",bottom:0,left:0,right:0,background:"linear-gradient(to top,rgba(0,0,0,.75),transparent)",padding:"32px 14px 12px",display:"flex",alignItems:"center",gap:8,zIndex:3}}>
+            <button onClick={togglePlay} style={{background:"rgba(255,255,255,.18)",border:"none",borderRadius:"50%",width:34,height:34,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
               {playing
-                ?<svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                :<svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><polygon points="5,3 19,12 5,21"/></svg>
+                ?<svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                :<svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><polygon points="5,3 19,12 5,21"/></svg>
               }
             </button>
-
-            {/* 음소거 토글 */}
-            <button onClick={toggleMute}
-              style={{background:"rgba(255,255,255,.18)",border:"none",borderRadius:"50%",width:36,height:36,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,backdropFilter:"blur(4px)"}}
-              onMouseEnter={()=>setShowVol(true)} onMouseLeave={()=>setShowVol(false)}>
+            <button onClick={toggleMute} style={{background:"rgba(255,255,255,.18)",border:"none",borderRadius:"50%",width:34,height:34,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
               {muted
-                ?<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-                :<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><path d="M15.54,8.46a5,5,0,0,1,0,7.07"/><path d="M19.07,4.93a10,10,0,0,1,0,14.14"/></svg>
+                ?<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+                :<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><path d="M15.54,8.46a5,5,0,0,1,0,7.07"/></svg>
               }
             </button>
-
-            {/* 볼륨 슬라이더 */}
-            {showVol && (
-              <input type="range" min="0" max="1" step="0.05" value={volume}
-                onChange={e=>changeVolume(parseFloat(e.target.value))}
-                onMouseEnter={()=>setShowVol(true)} onMouseLeave={()=>setShowVol(false)}
-                style={{width:80,accentColor:"#FEE500",cursor:"pointer"}}/>
-            )}
-
             <div style={{flex:1}}/>
-            <span style={{fontSize:10,color:"rgba(255,255,255,.6)",letterSpacing:".06em"}}>L O D</span>
+            <span style={{fontSize:9,color:"rgba(255,255,255,.5)",letterSpacing:".06em"}}>L O D</span>
           </div>
         )}
 
-        {/* 관리자 업로드 버튼 */}
-        {IS_ADMIN && !uploading && (
-          <button className="upload-btn" style={{bottom:src?52:10}}
-            onClick={()=>fileRef.current?.click()}>
+        {IS_ADMIN && !loading && (
+          <button className="upload-btn" style={{bottom:src?50:10}} onClick={()=>fileRef.current?.click()}>
             {src?"📁 영상 교체":"📁 영상 업로드"}
           </button>
         )}
       </div>
       <input ref={fileRef} type="file" accept="video/*" style={{display:"none"}} onChange={handleFile}/>
-      {error && <div style={{marginTop:10,background:"rgba(255,80,80,.12)",border:"1px solid rgba(255,80,80,.3)",borderRadius:12,padding:"10px 14px",fontSize:12,color:"rgba(255,160,160,.9)",lineHeight:1.6,textAlign:"center",width:"100%"}}>{error}</div>}
+      {error && <div style={{marginTop:8,background:"rgba(255,80,80,.12)",border:"1px solid rgba(255,80,80,.3)",borderRadius:12,padding:"10px 14px",fontSize:12,color:"rgba(255,150,150,.9)",lineHeight:1.6,textAlign:"center",width:"100%"}}>{error}</div>}
     </div>
   );
 }
 
-/* ── 룩북 카드 ── */
-function LookCard({look, onImageUpdate, onClick}){
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   룩북 카드
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function LookCard({look, onImageSaved, onClick}){
   const fileRef = useRef(null);
-  const [src,setSrc]   = useState(look.url||"");
-  const [prog,setProg] = useState(0);
-  const [uploading,setUploading] = useState(false);
-  const [error,setError] = useState("");
+  const [src,setSrc]       = useState(look.url||"");
+  const [prog,setProg]     = useState(0);
+  const [loading,setLoading] = useState(false);
+  const [error,setError]   = useState("");
 
-  const handleFile=async(e)=>{
-    const file=e.target.files[0]; if(!file)return;
-    setError(""); setUploading(true); setProg(0);
+  useEffect(()=>{ if(look.url) setSrc(look.url); },[look.url]);
+
+  const handleFile = async(e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    setError(""); setLoading(true); setProg(0);
     try{
-      const url=await uploadToCloudinary(file,"image",setProg);
-      setSrc(url);
-      onImageUpdate(look.id, url);
-      await saveToSheet(`룩북${look.id}_URL`, url);
-    }catch(err){
-      setError(err.message);
-    }finally{ setUploading(false); e.target.value=""; }
+      const newUrl = await uploadFile(file, "image", setProg);
+      setSrc(newUrl);
+      await saveToSheet(`룩북${look.id}_URL`, newUrl);
+      if(onImageSaved) onImageSaved(look.id, newUrl);
+    }catch(err){ setError(err.message); }
+    finally{ setLoading(false); e.target.value=""; }
   };
 
   return(
     <div>
-      <div className="lcard" onClick={()=>src&&onClick({...look,url:src})}>
+      <div className="lcard" onClick={()=>src&&onClick&&onClick({...look,url:src})}>
         <div className="lcard-inner">
           {src
             ?<img src={src} alt={look.label} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
@@ -463,14 +341,16 @@ function LookCard({look, onImageUpdate, onClick}){
               <span style={{fontSize:10,letterSpacing:".24em",textTransform:"uppercase",color:"rgba(240,236,228,.2)"}}>{look.label}</span></>
           }
         </div>
-        {uploading && <UploadOverlay progress={prog} text="업로드"/>}
-        {IS_ADMIN && !uploading && (
-          <button className="upload-btn" style={{fontSize:10,padding:"5px 12px"}}
+        {loading && <UploadOverlay prog={prog} text="업로드"/>}
+        {IS_ADMIN && !loading && (
+          <button className="upload-btn" style={{fontSize:10,padding:"5px 12px",bottom:8}}
             onClick={e=>{e.stopPropagation();fileRef.current?.click();}}>
             {src?"📷 교체":"📷 업로드"}
           </button>
         )}
-        <div className="lcard-info"><div style={{fontSize:11,fontWeight:900,letterSpacing:".18em",textTransform:"uppercase",color:"rgba(240,236,228,.9)"}}>{look.style}</div></div>
+        <div style={{position:"absolute",bottom:0,left:0,right:0,padding:10,opacity:0,transition:"opacity .3s",pointerEvents:"none",background:"linear-gradient(to top,rgba(0,0,0,.72) 0%,transparent 55%)"}} className="lcard-info">
+          <div style={{fontSize:11,fontWeight:900,letterSpacing:".18em",textTransform:"uppercase",color:"rgba(240,236,228,.9)"}}>{look.style}</div>
+        </div>
         <div style={{position:"absolute",top:10,left:10,fontSize:9,letterSpacing:".2em",color:"rgba(240,236,228,.22)"}}>{look.label}</div>
       </div>
       {error && <div style={{marginTop:4,fontSize:10,color:"rgba(255,140,140,.85)",lineHeight:1.5,textAlign:"center"}}>{error}</div>}
@@ -479,61 +359,59 @@ function LookCard({look, onImageUpdate, onClick}){
   );
 }
 
-/* ── LOOK MODAL ── */
-function LookModal({look,looks,onClose,onPrev,onNext,idx}){
-  useEffect(()=>{
-    const fn=e=>{if(e.key==="Escape")onClose();if(e.key==="ArrowLeft")onPrev();if(e.key==="ArrowRight")onNext();};
-    window.addEventListener("keydown",fn);return()=>window.removeEventListener("keydown",fn);
-  },[]);
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   편집 모달
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function EditModal({label, value, onSave, onClose}){
+  const [val,setVal] = useState(value);
+  const [saving,setSaving] = useState(false);
+  const save = async()=>{
+    setSaving(true);
+    await onSave(val);
+    setSaving(false);
+    onClose();
+  };
   return(
-    <div onClick={onClose} style={{position:"fixed",inset:0,zIndex:800,background:"rgba(4,4,4,.97)",backdropFilter:"blur(16px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,animation:"fadeIn .2s ease"}}>
-      <button onClick={onClose} style={{position:"fixed",top:16,right:16,width:42,height:42,borderRadius:"50%",border:"1px solid rgba(240,236,228,.25)",background:"transparent",color:"rgba(240,236,228,.6)",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",zIndex:810}}>×</button>
-      {idx>0&&<button onClick={e=>{e.stopPropagation();onPrev();}} style={{position:"fixed",left:10,top:"50%",transform:"translateY(-50%)",width:40,height:40,borderRadius:"50%",border:"1px solid rgba(240,236,228,.2)",background:"transparent",color:"rgba(240,236,228,.55)",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",zIndex:810}}>‹</button>}
-      {idx<looks.length-1&&<button onClick={e=>{e.stopPropagation();onNext();}} style={{position:"fixed",right:10,top:"50%",transform:"translateY(-50%)",width:40,height:40,borderRadius:"50%",border:"1px solid rgba(240,236,228,.2)",background:"transparent",color:"rgba(240,236,228,.55)",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",zIndex:810}}>›</button>}
-      <div onClick={e=>e.stopPropagation()} style={{width:"min(280px,70vw)",display:"flex",flexDirection:"column",gap:12,animation:"slideUp .25s ease"}}>
-        <div style={{paddingTop:"177.78%",position:"relative",borderRadius:22,border:"1px solid rgba(240,236,228,.12)",overflow:"hidden",background:"#181818"}}>
-          {look.url
-            ?<img src={look.url} alt={look.label} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
-            :<div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8}}>
-               <div style={{fontSize:20,fontWeight:900,letterSpacing:".1em",color:"rgba(240,236,228,.15)"}}>{look.label}</div>
-               <div style={{fontSize:9,letterSpacing:".24em",color:"rgba(240,236,228,.1)"}}>AI MODEL · L O D</div>
-             </div>
-          }
-        </div>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",padding:"0 2px"}}>
-          <div>
-            <div style={{fontSize:12,fontWeight:900,letterSpacing:".18em",textTransform:"uppercase",color:"rgba(240,236,228,.75)"}}>{look.style}</div>
-            <div style={{fontSize:9,letterSpacing:".12em",color:"rgba(240,236,228,.3)",marginTop:2}}>{look.label}</div>
-          </div>
-          <div style={{fontSize:10,color:"rgba(240,236,228,.22)"}}>{idx+1}/{looks.length}</div>
-        </div>
-        <div style={{display:"flex",justifyContent:"center",gap:5}}>
-          {looks.map((_,i)=><div key={i} onClick={e=>{e.stopPropagation();}} style={{height:5,borderRadius:3,transition:"all .25s",width:i===idx?"18px":"5px",background:i===idx?"rgba(240,236,228,.65)":"rgba(240,236,228,.18)"}}/>)}
+    <div className="modal-bg" onClick={onClose}>
+      <div className="modal-box" onClick={e=>e.stopPropagation()}>
+        <div style={{fontSize:14,fontWeight:700,color:"#f0ece4",marginBottom:14}}>✏️ {label} 수정</div>
+        <textarea className="modal-textarea" value={val} onChange={e=>setVal(e.target.value)} autoFocus/>
+        <div style={{marginTop:14,display:"flex",gap:8}}>
+          <button onClick={save} disabled={saving}
+            style={{background:"#FEE500",color:"#0a0a0a",border:"none",borderRadius:10,padding:"10px 24px",fontSize:13,fontWeight:900,cursor:"pointer",fontFamily:"inherit"}}>
+            {saving?"저장 중...":"✅ 저장"}
+          </button>
+          <button onClick={onClose}
+            style={{background:"transparent",border:"1px solid rgba(240,236,228,.2)",color:"rgba(240,236,228,.55)",borderRadius:10,padding:"10px 18px",fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>
+            취소
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-/* ── AI CHAT ── */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   AI 챗
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function Chat({open,onClose}){
   const [msgs,setMsgs]=useState([{role:"assistant",content:"안녕하세요! L O D AI 비서입니다 😊\n사입에 대해 궁금한 것을 무엇이든 물어보세요!"}]);
   const [input,setInput]=useState("");
   const [loading,setLoading]=useState(false);
-  const botRef=useRef(null);const inpRef=useRef(null);
+  const botRef=useRef(null); const inpRef=useRef(null);
 
   useEffect(()=>{if(open){setTimeout(()=>botRef.current?.scrollIntoView({behavior:"smooth"}),100);setTimeout(()=>inpRef.current?.focus(),320);}},[open,msgs.length]);
 
   const send=async()=>{
-    const t=input.trim();if(!t||loading)return;
+    const t=input.trim(); if(!t||loading) return;
     const nm=[...msgs,{role:"user",content:t}];
-    setMsgs(nm);setInput("");setLoading(true);
+    setMsgs(nm); setInput(""); setLoading(true);
     try{
       const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYS,messages:nm.map(m=>({role:m.role,content:m.content}))})});
       const d=await r.json();
       setMsgs(p=>[...p,{role:"assistant",content:d.content?.[0]?.text||"죄송합니다, 잠시 후 다시 시도해 주세요."}]);
-    }catch{setMsgs(p=>[...p,{role:"assistant",content:"연결에 문제가 생겼어요. 잠시 후 다시 시도해 주세요."}]);}
+    }catch{ setMsgs(p=>[...p,{role:"assistant",content:"연결에 문제가 생겼어요."}]); }
     setLoading(false);
   };
   const onKey=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}};
@@ -545,16 +423,14 @@ function Chat({open,onClose}){
         <div style={{position:"absolute",top:8,left:"50%",transform:"translateX(-50%)",width:36,height:4,borderRadius:2,background:"rgba(240,236,228,.22)"}}/>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"20px 20px 14px",borderBottom:"1px solid rgba(240,236,228,.1)",flexShrink:0}}>
           <div>
-            <div style={{fontSize:15,fontWeight:700,color:"#f0ece4",letterSpacing:".06em"}}>L O D AI 비서</div>
+            <div style={{fontSize:15,fontWeight:700,color:"#f0ece4"}}>L O D AI 비서</div>
             <div style={{fontSize:10,color:"#FEE500",marginTop:2}}>● 24시간 응대</div>
           </div>
-          <button onClick={onClose} style={{width:30,height:30,borderRadius:"50%",background:"rgba(240,236,228,.08)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,color:"rgba(240,236,228,.6)"}}>×</button>
+          <button onClick={onClose} style={{width:30,height:30,borderRadius:"50%",background:"rgba(240,236,228,.08)",border:"none",cursor:"pointer",fontSize:16,color:"rgba(240,236,228,.6)"}}>×</button>
         </div>
         <div style={{flex:1,overflowY:"auto",padding:"14px 16px",display:"flex",flexDirection:"column",gap:10}}>
           {msgs.map((m,i)=>(
-            <div key={i} style={{maxWidth:"83%",padding:"11px 15px",fontSize:14,lineHeight:1.65,whiteSpace:"pre-wrap",wordBreak:"keep-all",borderRadius:m.role==="user"?"20px 20px 6px 20px":"20px 20px 20px 6px",background:m.role==="user"?"#FEE500":"rgba(240,236,228,.08)",color:m.role==="user"?"#0a0a0a":"#f0ece4",fontWeight:m.role==="user"?600:400,alignSelf:m.role==="user"?"flex-end":"flex-start"}}>
-              {m.content}
-            </div>
+            <div key={i} style={{maxWidth:"83%",padding:"11px 15px",fontSize:14,lineHeight:1.65,whiteSpace:"pre-wrap",wordBreak:"keep-all",borderRadius:m.role==="user"?"20px 20px 6px 20px":"20px 20px 20px 6px",background:m.role==="user"?"#FEE500":"rgba(240,236,228,.08)",color:m.role==="user"?"#0a0a0a":"#f0ece4",fontWeight:m.role==="user"?600:400,alignSelf:m.role==="user"?"flex-end":"flex-start"}}>{m.content}</div>
           ))}
           {loading&&<div style={{alignSelf:"flex-start",padding:"11px 16px",borderRadius:"20px 20px 20px 6px",background:"rgba(240,236,228,.08)",display:"flex",gap:5,alignItems:"center"}}>
             {[0,1,2].map(i=><div key={i} style={{width:7,height:7,borderRadius:"50%",background:"rgba(240,236,228,.42)",animation:`dotB 1.2s ease-in-out ${i*.2}s infinite`}}/>)}
@@ -577,57 +453,38 @@ function Chat({open,onClose}){
   );
 }
 
-/* ── MAIN PAGE ── */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   메인 페이지
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function MainPage({onAgent, onChat}){
   const clock = useClock();
-  const titleRef = useRef(null);  // 실제 DOM 측정용
-  const {data, setData, loading} = useSheetData();
+  const titleRef = useRef(null);
+  const [data, setData]   = useState({...DEFAULTS});
   const [looks, setLooks] = useState(LOOKS_INIT);
-
-  // 시트에서 룩북 URL 불러오기
-  useEffect(()=>{
-    setLooks(ls=>ls.map(l=>{
-      const url=data[`룩북${l.id}_URL`]||"";
-      return url?{...l,url}:l;
-    }));
-  },[data]);
   const [modal, setModal] = useState(null);
   const [mIdx,  setMIdx]  = useState(0);
   const [editField, setEditField] = useState(null);
-  const [kakaoEdit, setKakaoEdit] = useState(null); // 카카오 링크 편집
+  const [sheetLoaded, setSheetLoaded] = useState(false);
 
-  const openModal = l => { setModal(l); setMIdx(looks.findIndex(x=>x.id===l.id)); };
+  /* 시트 로드 */
+  useEffect(()=>{
+    loadSheet(sheetData=>{
+      setData(sheetData);
+      // 룩북 이미지 URL 적용
+      setLooks(ls=>ls.map(l=>({...l, url: sheetData[`룩북${l.id}_URL`]||""})));
+      setSheetLoaded(true);
+    });
+  },[]);
+
+  const openModal = l=>{ setModal(l); setMIdx(looks.findIndex(x=>x.id===l.id)); };
   const prev = ()=>{ if(mIdx>0){const i=mIdx-1;setMIdx(i);setModal(looks[i]);} };
   const next = ()=>{ if(mIdx<looks.length-1){const i=mIdx+1;setMIdx(i);setModal(looks[i]);} };
 
-  const handleEdit = (key, label, value) => setEditField({key, label, value});
-  const handleSave = (key, val) => setData(d=>({...d,[key]:val}));
-
-  // 이미지 업로드 완료 시 → 상태 + 즉시 시트 저장
-  const handleImageUpdate = async(id, url) => {
-    setLooks(ls=>ls.map(x=>x.id===id?{...x,url}:x));
-    await saveToSheet(`룩북${id}_URL`, url);
-  };
-
-  // 전체 저장 (글자 + 이미지URL 모두)
-  const saveAll = async() => {
-    if(!APPS_SCRIPT_URL){ alert("Apps Script URL이 설정되지 않았습니다."); return; }
-    const btn = document.getElementById("admin-save-btn");
-    btn.textContent="저장 중..."; btn.disabled=true;
-    try{
-      const lookUrls = {};
-      looks.forEach(l=>{ if(l.url) lookUrls[`룩북${l.id}_URL`]=l.url; });
-      await fetch(APPS_SCRIPT_URL,{
-        method:"POST", mode:"no-cors",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({action:"updateMany", data:{...data,...lookUrls}})
-      });
-      btn.textContent="✅ 저장완료!";
-      setTimeout(()=>{ btn.textContent="💾 전체 저장"; btn.disabled=false; },2000);
-    }catch(e){
-      btn.textContent="❌ 실패";
-      setTimeout(()=>{ btn.textContent="💾 전체 저장"; btn.disabled=false; },2000);
-    }
+  /* 글자 편집 */
+  const openEdit = (key, label) => setEditField({key, label, value: data[key]||""});
+  const handleSave = async(key, val)=>{
+    setData(d=>({...d,[key]:val}));
+    await saveToSheet(key, val);
   };
 
   const agents = [
@@ -637,73 +494,53 @@ function MainPage({onAgent, onChat}){
 
   return(
     <div>
-      {/* 관리자 알림바 + 저장 버튼 */}
+      {/* 관리자 배너 */}
       {IS_ADMIN && (
-        <div style={{background:"rgba(254,229,0,.12)",borderBottom:"1px solid rgba(254,229,0,.25)",padding:"12px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexWrap:"wrap"}}>
-          <span style={{fontSize:12,color:"#FEE500",fontWeight:700,letterSpacing:".04em"}}>
-            🔐 관리자 모드 — 글자 클릭해서 수정
-          </span>
-          <button id="admin-save-btn" onClick={saveAll}
-            style={{background:"#FEE500",color:"#0a0a0a",border:"none",borderRadius:20,padding:"8px 20px",fontSize:13,fontWeight:900,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>
-            💾 전체 저장
-          </button>
+        <div style={{background:"rgba(254,229,0,.12)",borderBottom:"1px solid rgba(254,229,0,.25)",padding:"10px 20px",textAlign:"center",fontSize:12,color:"#FEE500",fontWeight:700}}>
+          🔐 관리자 모드 — 글자를 클릭해서 수정하세요
         </div>
       )}
 
-      {/* ─ 타이틀 — ref로 실제 폭 측정 ─ */}
+      {/* 타이틀 */}
       <div style={{padding:"24px 20px 16px",textAlign:"center"}}>
-        {/* 보이는 텍스트 */}
-        {IS_ADMIN
-          ? <div onClick={()=>handleEdit("홈페이지 제목","홈페이지 제목",data["홈페이지 제목"])}
-              className="editable"
-              style={{fontSize:"clamp(28px,7.5vw,44px)",fontWeight:900,letterSpacing:".1em",lineHeight:1.28,wordBreak:"keep-all",display:"inline-block",whiteSpace:"pre-line",position:"relative",cursor:"pointer"}}>
-              <span className="edit-hint">✏️ 클릭해서 수정</span>
-              {data["홈페이지 제목"]}
-            </div>
-          : <div style={{fontSize:"clamp(28px,7.5vw,44px)",fontWeight:900,letterSpacing:".1em",lineHeight:1.28,wordBreak:"keep-all",display:"inline-block",whiteSpace:"pre-line"}}>
-              {data["홈페이지 제목"]}
-            </div>
-        }
-        {/* 폭 측정용 숨긴 div — 항상 존재 */}
-        <div ref={titleRef} aria-hidden="true" style={{
-          fontSize:"clamp(28px,7.5vw,44px)",fontWeight:900,letterSpacing:".1em",
-          lineHeight:1.28,whiteSpace:"pre-line",display:"inline-block",
-          position:"fixed",top:"-9999px",left:"-9999px",visibility:"hidden",pointerEvents:"none"
-        }}>{data["홈페이지 제목"]}</div>
+        <div ref={titleRef}
+          onClick={()=>IS_ADMIN&&openEdit("홈페이지 제목","홈페이지 제목")}
+          className={IS_ADMIN?"editable":""}
+          style={{fontSize:"clamp(28px,7.5vw,44px)",fontWeight:900,letterSpacing:".1em",lineHeight:1.28,wordBreak:"keep-all",display:"inline-block",whiteSpace:"pre-line"}}>
+          {data["홈페이지 제목"]}
+        </div>
       </div>
 
-      {/* ─ 영상 박스 ─ */}
+      {/* 영상 박스 */}
       <div style={{padding:"0 20px"}}>
-        <VideoBox videoUrl={data["메인 영상 URL"]} titleRef={titleRef} sheetKey="메인 영상 URL"/>
+        <VideoBox
+          url={data["메인 영상 URL"]}
+          titleRef={titleRef}
+          onSave={(key,val)=>setData(d=>({...d,[key]:val}))}
+        />
       </div>
 
-      {/* ─ 공지사항 ─ */}
+      {/* 공지사항 */}
       {(data["공지사항"]||IS_ADMIN) && (
-        <div style={{margin:"16px 20px 0"}}>
-          {IS_ADMIN
-            ? <div onClick={()=>handleEdit("공지사항","공지사항",data["공지사항"]||"")}
-                className="editable"
-                style={{display:"block",background:"rgba(254,229,0,.1)",border:"1px solid rgba(254,229,0,.3)",borderRadius:16,padding:"12px 18px",fontSize:14,fontWeight:700,color:"#FEE500",textAlign:"center",lineHeight:1.6,cursor:"pointer",position:"relative"}}>
-                <span className="edit-hint">✏️ 클릭해서 수정</span>
-                {data["공지사항"]||"(공지사항을 입력하세요)"}
-              </div>
-            : <div style={{display:"block",background:"rgba(254,229,0,.1)",border:"1px solid rgba(254,229,0,.3)",borderRadius:16,padding:"12px 18px",fontSize:14,fontWeight:700,color:"#FEE500",textAlign:"center",lineHeight:1.6}}>
-                📢 {data["공지사항"]}
-              </div>
-          }
+        <div style={{margin:"16px 20px 0"}}
+          onClick={()=>IS_ADMIN&&openEdit("공지사항","공지사항")}
+          className={IS_ADMIN?"editable":""}>
+          <div style={{background:"rgba(254,229,0,.1)",border:"1px solid rgba(254,229,0,.3)",borderRadius:16,padding:"12px 18px",fontSize:14,fontWeight:700,color:"#FEE500",textAlign:"center",lineHeight:1.6}}>
+            {data["공지사항"]||"📢 (공지사항을 입력하세요)"}
+          </div>
         </div>
       )}
 
-      {/* ─ AI 챗 배너 ─ */}
+      {/* AI 챗 버튼 */}
       <div style={{padding:"20px 20px 0",display:"flex",justifyContent:"center"}}>
         <button onClick={onChat} className="chat-pulse"
-          style={{width:"62%",padding:"16px 14px",background:"#fff",color:"#0a0a0a",border:"none",borderRadius:22,cursor:"pointer",textAlign:"center",fontFamily:"inherit",fontWeight:900,fontSize:"clamp(13px,3.5vw,17px)",lineHeight:1.5,letterSpacing:".03em",transition:"transform .2s"}}>
+          style={{width:"62%",padding:"16px 14px",background:"#fff",color:"#0a0a0a",border:"none",borderRadius:22,cursor:"pointer",textAlign:"center",fontFamily:"inherit",fontWeight:900,fontSize:"clamp(13px,3.5vw,17px)",lineHeight:1.5,transition:"transform .2s"}}>
           💬 사입에 대해 무엇이든 물어보세요<br/>
           <span style={{display:"block",textAlign:"center",marginTop:3,fontSize:".9em"}}>24시 AI 챗!!</span>
         </button>
       </div>
 
-      {/* ─ 시계 + 스텝 ─ */}
+      {/* 시계 + 스텝 */}
       <div style={{margin:"20px 20px 0",borderTop:"2px solid rgba(240,236,228,.18)",borderBottom:"2px solid rgba(240,236,228,.18)",padding:"22px 0"}}>
         <div style={{textAlign:"center",marginBottom:18}}>
           <div style={{fontSize:12,letterSpacing:".32em",color:"rgba(240,236,228,.38)",textTransform:"uppercase",marginBottom:8,fontWeight:700}}>CURRENT MARKET TIME</div>
@@ -722,49 +559,42 @@ function MainPage({onAgent, onChat}){
         </div>
       </div>
 
-      {/* ─ PR 문구 ─ */}
+      {/* PR */}
       <div style={{margin:"20px 20px 0",borderLeft:"7px solid #f0ece4",padding:"16px 24px",borderRadius:"0 20px 20px 0",background:"rgba(240,236,228,.03)",textAlign:"center"}}>
         <p style={{fontSize:"clamp(15px,4.2vw,22px)",lineHeight:1.65,fontWeight:900,wordBreak:"keep-all",marginBottom:6}}>지역 담당 삼촌들의 평균 경력은<br/>10~15년 이상의 베테랑들입니다.</p>
         <p style={{fontSize:"clamp(15px,4.2vw,22px)",lineHeight:1.65,fontWeight:900,wordBreak:"keep-all"}}>트렌드와 마켓 정보를 함께 공유해 드립니다.</p>
       </div>
 
-      {/* ─ 지역 카드 ─ */}
+      {/* 지역 카드 */}
       <div style={{padding:"20px 20px 0",display:"flex",flexDirection:"column",gap:12}}>
         {agents.map(ag=>(
           <div key={ag.id}>
             <button onClick={()=>onAgent(ag)} className="rbtn">
-              {IS_ADMIN
-                ? <div onClick={e=>{e.stopPropagation();handleEdit(ag.id==="SN"?"강북팀 이름":"인천팀 이름",ag.id==="SN"?"강북팀 이름":"인천팀 이름",ag.label);}}
-                    className="editable"
-                    style={{fontSize:"clamp(20px,5.8vw,30px)",fontWeight:900,color:"#0a0a0a",lineHeight:1.2,flex:1,textAlign:"center",position:"relative",cursor:"pointer"}}>
-                    <span className="edit-hint" style={{color:"#0a0a0a",background:"rgba(0,0,0,.15)"}}>✏️ 클릭해서 수정</span>
-                    {ag.label}
-                  </div>
-                : <div style={{fontSize:"clamp(20px,5.8vw,30px)",fontWeight:900,color:"#0a0a0a",lineHeight:1.2,flex:1,textAlign:"center"}}>{ag.label}</div>
-              }
+              <div
+                onClick={e=>{if(IS_ADMIN){e.stopPropagation();openEdit(ag.id==="SN"?"강북팀 이름":"인천팀 이름",ag.id==="SN"?"강북팀 이름":"인천팀 이름");}}}
+                className={IS_ADMIN?"editable":""}
+                style={{fontSize:"clamp(20px,5.8vw,30px)",fontWeight:900,color:"#0a0a0a",lineHeight:1.2,flex:1,textAlign:"center"}}>
+                {ag.label}
+              </div>
               <span style={{fontSize:"clamp(22px,6vw,32px)",fontWeight:900,color:"#0a0a0a",flexShrink:0}}>→</span>
             </button>
-            {/* 카카오 링크 직접 입력 (관리자 모드) */}
+            {/* 관리자: 카카오 링크 입력 */}
             {IS_ADMIN && (
-              <div style={{marginTop:6,display:"flex",gap:6,alignItems:"center"}}>
+              <div style={{marginTop:6,display:"flex",gap:6,alignItems:"center",padding:"0 4px"}}>
                 <span style={{fontSize:10,color:"rgba(240,236,228,.4)",whiteSpace:"nowrap"}}>카카오 링크:</span>
-                <input
-                  defaultValue={ag.kakao}
-                  placeholder="https://open.kakao.com/..."
+                <input defaultValue={ag.kakao} placeholder="https://open.kakao.com/..."
                   onBlur={e=>{
-                    const key=ag.id==="SN"?"강북팀 카카오":"인천팀 카카오";
+                    const key = ag.id==="SN"?"강북팀 카카오":"인천팀 카카오";
                     handleSave(key, e.target.value);
-                    saveToSheet(key, e.target.value);
                   }}
-                  style={{flex:1,background:"rgba(255,255,255,.07)",border:"1px solid rgba(240,236,228,.2)",borderRadius:10,padding:"6px 10px",fontSize:11,color:"#f0ece4",fontFamily:"inherit"}}
-                />
+                  style={{flex:1,background:"rgba(255,255,255,.07)",border:"1px solid rgba(240,236,228,.2)",borderRadius:10,padding:"6px 10px",fontSize:11,color:"#f0ece4",fontFamily:"inherit"}}/>
               </div>
             )}
           </div>
         ))}
       </div>
 
-      {/* ─ 룩북 ─ */}
+      {/* 룩북 */}
       <div style={{padding:"52px 20px 0",textAlign:"center"}}>
         <div style={{fontSize:"clamp(44px,11.5vw,80px)",letterSpacing:".3em",color:"rgba(240,236,228,.06)",fontWeight:900,lineHeight:1,marginBottom:-10}}>AI EDITORIAL</div>
         <h2 style={{fontSize:"clamp(20px,5.5vw,30px)",fontWeight:900,position:"relative",zIndex:1}}>인플루언서 패션 AI 모델 제작</h2>
@@ -772,11 +602,12 @@ function MainPage({onAgent, onChat}){
       </div>
       <div style={{padding:"24px 20px 0",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
         {looks.map(l=>(
-          <LookCard key={l.id} look={l} onClick={openModal} onImageUpdate={handleImageUpdate}/>
+          <LookCard key={l.id} look={l} onClick={openModal}
+            onImageSaved={(id,url)=>setLooks(ls=>ls.map(x=>x.id===id?{...x,url}:x))}/>
         ))}
       </div>
 
-      {/* ─ FOOTER ─ */}
+      {/* Footer */}
       <footer style={{padding:"52px 20px 40px",textAlign:"center",borderTop:"1px solid rgba(240,236,228,.07)",borderRadius:"22px 22px 0 0",background:"#0d0d0d",marginTop:48}}>
         <svg width="44" height="44" viewBox="0 0 100 100" fill="none" style={{margin:"0 auto",display:"block"}}>
           <circle cx="50" cy="50" r="46" stroke="rgba(240,236,228,.2)" strokeWidth="5" fill="none"/>
@@ -788,14 +619,42 @@ function MainPage({onAgent, onChat}){
         </p>
       </footer>
 
-      {modal && <LookModal look={modal} looks={looks} idx={mIdx} onClose={()=>setModal(null)} onPrev={prev} onNext={next}/>}
-      {editField && <EditModal fieldKey={editField.key} label={editField.label} value={editField.value} onSave={handleSave} onClose={()=>setEditField(null)}/>}
+      {/* 룩북 모달 */}
+      {modal && (
+        <div onClick={()=>setModal(null)} style={{position:"fixed",inset:0,zIndex:800,background:"rgba(4,4,4,.97)",backdropFilter:"blur(16px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,animation:"fadeIn .2s ease"}}>
+          <button onClick={()=>setModal(null)} style={{position:"fixed",top:16,right:16,width:42,height:42,borderRadius:"50%",border:"1px solid rgba(240,236,228,.25)",background:"transparent",color:"rgba(240,236,228,.6)",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",zIndex:810}}>×</button>
+          {mIdx>0&&<button onClick={e=>{e.stopPropagation();prev();}} style={{position:"fixed",left:10,top:"50%",transform:"translateY(-50%)",width:40,height:40,borderRadius:"50%",border:"1px solid rgba(240,236,228,.2)",background:"transparent",color:"rgba(240,236,228,.55)",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",zIndex:810}}>‹</button>}
+          {mIdx<looks.length-1&&<button onClick={e=>{e.stopPropagation();next();}} style={{position:"fixed",right:10,top:"50%",transform:"translateY(-50%)",width:40,height:40,borderRadius:"50%",border:"1px solid rgba(240,236,228,.2)",background:"transparent",color:"rgba(240,236,228,.55)",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",zIndex:810}}>›</button>}
+          <div onClick={e=>e.stopPropagation()} style={{width:"min(280px,70vw)",display:"flex",flexDirection:"column",gap:12}}>
+            <div style={{paddingTop:"177.78%",position:"relative",borderRadius:22,border:"1px solid rgba(240,236,228,.12)",overflow:"hidden",background:"#181818"}}>
+              {modal.url
+                ?<img src={modal.url} alt={modal.label} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
+                :<div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8}}>
+                   <div style={{fontSize:20,fontWeight:900,color:"rgba(240,236,228,.15)"}}>{modal.label}</div>
+                 </div>
+              }
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end"}}>
+              <div style={{fontSize:12,fontWeight:900,letterSpacing:".18em",textTransform:"uppercase",color:"rgba(240,236,228,.75)"}}>{modal.style}</div>
+              <div style={{fontSize:10,color:"rgba(240,236,228,.22)"}}>{mIdx+1}/{looks.length}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editField && (
+        <EditModal label={editField.label} value={editField.value}
+          onSave={val=>handleSave(editField.key, val)}
+          onClose={()=>setEditField(null)}/>
+      )}
     </div>
   );
 }
 
-/* ── AGENT PAGE ── */
-function AgentPage({ag, onBack, onAgent, allAgents}){
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   에이전트 페이지
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function AgentPage({ag, onBack, allAgents, onAgent}){
   const titleRef = useRef(null);
   useEffect(()=>{window.scrollTo({top:0});},[ag.id]);
   return(
@@ -808,7 +667,7 @@ function AgentPage({ag, onBack, onAgent, allAgents}){
         </button>
       </div>
       <div style={{padding:"16px 20px 0"}}>
-        <VideoBox videoUrl={ag.videoUrl||""} titleRef={titleRef} sheetKey={ag.id==="SN"?"강북팀 영상":"인천팀 영상"}/>
+        <VideoBox url={ag.videoUrl||""} titleRef={titleRef}/>
       </div>
       <div style={{padding:"16px 20px 0"}}>
         <a href={ag.kakao} target="_blank" rel="noopener noreferrer"
@@ -826,7 +685,7 @@ function AgentPage({ag, onBack, onAgent, allAgents}){
         </div>
         <div>
           <div style={{fontSize:14,letterSpacing:".28em",color:"rgba(240,236,228,.26)",textTransform:"uppercase",marginBottom:14}}>Introduction</div>
-          {ag.intro.split("\n").map((line,i)=>(
+          {(ag.intro||"").split("\n").map((line,i)=>(
             <p key={i} style={{fontSize:i===0?"clamp(17px,4.8vw,24px)":"clamp(14px,3.8vw,19px)",lineHeight:1.75,color:i===0?"rgba(240,236,228,.88)":"rgba(240,236,228,.5)",marginBottom:10,wordBreak:"keep-all"}}>{line}</p>
           ))}
         </div>
@@ -855,50 +714,54 @@ function AgentPage({ag, onBack, onAgent, allAgents}){
   );
 }
 
-/* ── APP ── */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   APP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function App(){
   const [page,setPage]   = useState("main");
   const [ag,setAg]       = useState(null);
   const [chatOpen,setChatOpen] = useState(false);
-  const {data} = useSheetData();
+  const [data,setData]   = useState({...DEFAULTS});
+
+  // 시트에서 에이전트 데이터 로드
+  useEffect(()=>{
+    loadSheet(sheetData=>setData(sheetData));
+  },[]);
 
   const allAgents = [
     {id:"SN",label:data["강북팀 이름"],kakao:data["강북팀 카카오"],deadline:data["강북팀 마감"],intro:data["강북팀 소개"],regionEn:"SEOUL NORTH AREA"},
     {id:"IB",label:data["인천팀 이름"],kakao:data["인천팀 카카오"],deadline:data["인천팀 마감"],intro:data["인천팀 소개"],regionEn:"INCHEON · BUCHEON"},
   ];
 
-  const goAgent = a => { setAg(a); setPage("agent"); window.scrollTo({top:0}); };
-  const goMain  = () => { setPage("main"); setAg(null); };
+  const goAgent = a=>{ setAg(a); setPage("agent"); window.scrollTo({top:0}); };
+  const goMain  = ()=>{ setPage("main"); setAg(null); };
 
   return(
     <div className="shell">
-      {/* NAV */}
       <div className="nav">
         <button onClick={goMain} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex",alignItems:"center",gap:10}}>
           <LDLogo size={54}/>
           <span style={{fontSize:13,fontWeight:300,color:"rgba(240,236,228,.62)",letterSpacing:".22em",textTransform:"uppercase"}}>Layer On Drape</span>
         </button>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          {IS_ADMIN && <span className="admin-badge">관리자</span>}
-          <a href={MAIN_KAKAO} target="_blank" rel="noopener noreferrer"
-            style={{background:"#f0ece4",color:"#0a0a0a",padding:"11px 20px",fontSize:13,fontWeight:900,textDecoration:"none",borderRadius:50,whiteSpace:"nowrap",transition:"opacity .2s"}}
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          {IS_ADMIN && <span style={{background:"#FEE500",color:"#0a0a0a",fontSize:10,fontWeight:900,padding:"3px 10px",borderRadius:20,letterSpacing:".06em"}}>관리자</span>}
+          <a href={data["강북팀 카카오"]||MAIN_KAKAO} target="_blank" rel="noopener noreferrer"
+            style={{background:"#f0ece4",color:"#0a0a0a",padding:"10px 18px",fontSize:13,fontWeight:900,textDecoration:"none",borderRadius:50,whiteSpace:"nowrap",transition:"opacity .2s"}}
             onMouseEnter={e=>e.currentTarget.style.opacity=".82"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
             사입 프로그램
           </a>
         </div>
       </div>
 
-      {/* PAGE */}
       <div className="fade-in" key={page}>
         {page==="main"
           ?<MainPage onAgent={goAgent} onChat={()=>setChatOpen(true)}/>
-          :<AgentPage ag={ag} onBack={goMain} onAgent={goAgent} allAgents={allAgents}/>
+          :<AgentPage ag={ag} onBack={goMain} allAgents={allAgents} onAgent={goAgent}/>
         }
       </div>
 
       <Chat open={chatOpen} onClose={()=>setChatOpen(false)}/>
 
-      {/* 플로팅 챗 버튼 */}
       <div style={{position:"sticky",bottom:0,display:"flex",justifyContent:"flex-end",padding:"0 16px 20px",marginTop:-62,pointerEvents:"none"}}>
         <button onClick={()=>setChatOpen(v=>!v)} className={chatOpen?"":"float-pulse"}
           style={{width:54,height:54,borderRadius:"50%",background:"#FEE500",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 20px rgba(254,229,0,.45)",transition:"transform .2s",pointerEvents:"auto"}}
