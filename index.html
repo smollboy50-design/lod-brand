@@ -648,12 +648,20 @@ function MainPage({onAgent, onChat}){
           <div style={{fontFamily:"monospace",fontSize:"clamp(34px,9.5vw,56px)",fontWeight:800,letterSpacing:".04em",lineHeight:1}}>{clock}</div>
         </div>
         <div style={{background:"rgba(240,236,228,.04)",padding:"16px 18px",borderRadius:20,textAlign:"center"}}>
-          <div style={{fontSize:13,fontWeight:800,color:"rgba(240,236,228,.42)",letterSpacing:".18em",textTransform:"uppercase",marginBottom:12}}>사입 진행 방식</div>
-          <div className="steps-row">
-            {STEPS.map((s,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",flexShrink:0}}>
-                <span style={{fontSize:"clamp(15px,4.2vw,22px)",fontWeight:900,whiteSpace:"nowrap"}}>{s}</span>
-                {i<STEPS.length-1&&<span style={{margin:"0 8px",fontSize:13,color:"rgba(240,236,228,.32)",flexShrink:0}}>▶</span>}
+          <div style={{fontSize:18,fontWeight:800,color:"rgba(240,236,228,.9)",letterSpacing:".18em",textTransform:"uppercase",marginBottom:16,textAlign:"center"}}>사입 진행 방식</div>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:0}}>
+            {[
+              {icon:"📋", label:"사입\n신청"},
+              {icon:"🏃", label:"현장\n픽업"},
+              {icon:"📦", label:"지역별\n분류"},
+              {icon:"🚛", label:"안전\n배송"},
+            ].map((s,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center"}}>
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+                  <span style={{fontSize:32,lineHeight:1}}>{s.icon}</span>
+                  <span style={{fontSize:13,fontWeight:900,color:"rgba(240,236,228,.85)",textAlign:"center",lineHeight:1.4,whiteSpace:"pre-line"}}>{s.label}</span>
+                </div>
+                {i<3&&<span style={{fontSize:14,color:"rgba(240,236,228,.5)",fontWeight:900,margin:"0 4px",paddingBottom:20}}>→</span>}
               </div>
             ))}
           </div>
@@ -961,9 +969,9 @@ function AgentPage({ag, onBack, allAgents, onAgent, sheetData, onDataUpdate}){
           style={{background:"rgba(240,236,228,.03)",border:"1px solid rgba(240,236,228,.08)",borderRadius:20,padding:"20px",cursor:IS_ADMIN?"pointer":"default"}}>
           {intro
             ?(intro.split("\n").map((line,i)=>(
-                <p key={i} style={{fontSize:"clamp(14px,4vw,18px)",lineHeight:1.8,color:"rgba(240,236,228,.82)",marginBottom:i<intro.split("\n").length-1?8:0,wordBreak:"keep-all"}}>{line}</p>
+                <p key={i} style={{fontSize:"clamp(16px,4.5vw,20px)",lineHeight:1.9,color:"rgba(240,236,228,.88)",marginBottom:i<intro.split("\n").length-1?10:0,wordBreak:"keep-all"}}>{line}</p>
               )))
-            :<p style={{fontSize:14,color:"rgba(240,236,228,.3)",textAlign:"center"}}>{IS_ADMIN?"(소개글을 클릭해서 입력하세요)":"소개글이 없습니다."}</p>
+            :<p style={{fontSize:15,color:"rgba(240,236,228,.3)",textAlign:"center"}}>{IS_ADMIN?"(소개글을 클릭해서 입력하세요)":"소개글이 없습니다."}</p>
           }
         </div>
       </div>
