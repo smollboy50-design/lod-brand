@@ -872,68 +872,72 @@ function AgentPage({ag, onBack, allAgents, onAgent, sheetData, onDataUpdate}){
         </button>
       </div>
 
-      {/* 팀 이름 */}
-      <div style={{padding:"16px 20px 0",textAlign:"center"}}>
-        <div style={{fontSize:10,letterSpacing:".32em",color:"rgba(240,236,228,.28)",textTransform:"uppercase",marginBottom:8}}>{ag.regionEn}</div>
-        <h2 ref={teamTitleRef} style={{fontSize:"clamp(28px,8vw,44px)",fontWeight:900,lineHeight:1.15,display:"inline-block"}}>{ag.label}</h2>
-      </div>
+      {/* 팀 이름 + 미디어박스 + 카카오 — 같은 컨테이너로 폭 자동 맞춤 */}
+      <div style={{padding:"16px 20px 0",display:"flex",justifyContent:"center"}}>
+        <div style={{display:"inline-flex",flexDirection:"column",alignItems:"center",gap:14,width:"auto"}}>
 
-      {/* 미디어 박스 + 카카오 버튼 — 팀 이름 폭과 동일하게 */}
-      <div style={{padding:"16px 20px 0",display:"flex",flexDirection:"column",alignItems:"center",gap:14}}>
-        {/* 미디어 박스 */}
-        <div ref={mediaWrapRef} style={{width:"fit-content",minWidth:"50%",maxWidth:"calc(100% - 0px)"}}>
-          <MediaBox
-            videoUrl={videoUrl}
-            photoUrl={photoUrl}
-            onUpload={async(file)=>{
-              const isVideo = file.type.startsWith("video/");
-              const type    = isVideo ? "video" : "image";
-              const key     = isVideo ? videoKey : photoKey;
-              if(isVideo){ setVidError(""); setVidLoading(true); setVidProg(0); }
-              else        { setImgError(""); setImgLoading(true); setImgProg(0); }
-              try{
-                const url = await uploadFile(file, type, isVideo?setVidProg:setImgProg);
-                if(isVideo){ setVideoUrl(url); setPhotoUrl(""); }
-                else        { setPhotoUrl(url); setVideoUrl(""); }
-                await saveToSheet(key, url);
-                await saveToSheet(isVideo?photoKey:videoKey, "");
-                if(onDataUpdate){ onDataUpdate(key,url); onDataUpdate(isVideo?photoKey:videoKey,""); }
-              }catch(err){
-                if(isVideo) setVidError(err.message);
-                else        setImgError(err.message);
-              }finally{
-                if(isVideo) setVidLoading(false);
-                else        setImgLoading(false);
-              }
-            }}
-            loading={vidLoading||imgLoading}
-            prog={vidLoading?vidProg:imgProg}
-            error={vidError||imgError}
-          />
-        </div>
+          {/* 팀 이름 */}
+          <div style={{textAlign:"center",width:"100%"}}>
+            <div style={{fontSize:10,letterSpacing:".32em",color:"rgba(240,236,228,.28)",textTransform:"uppercase",marginBottom:8}}>{ag.regionEn}</div>
+            <h2 style={{fontSize:"clamp(28px,8vw,44px)",fontWeight:900,lineHeight:1.15,whiteSpace:"nowrap"}}>{ag.label}</h2>
+          </div>
 
-        {/* 카카오톡 버튼 */}
-        <div ref={kakaoWrapRef} style={{width:"fit-content",minWidth:"50%",maxWidth:"calc(100% - 0px)",display:"flex",flexDirection:"column",gap:8}}>
-          <a href={kakaoUrl||ag.kakao} target="_blank" rel="noopener noreferrer"
-            style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,background:"#FEE500",color:"#0a0a0a",padding:"16px",fontSize:14,fontWeight:900,textDecoration:"none",textTransform:"uppercase",borderRadius:50,letterSpacing:".08em",transition:"opacity .2s",textAlign:"center"}}
-            onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
-            onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#0a0a0a"><path d="M12 3C7.03 3 3 6.36 3 10.5c0 2.56 1.48 4.83 3.74 6.26l-.95 3.54 4.1-2.04c.67.1 1.37.16 2.11.16 4.97 0 9-3.36 9-7.5S16.97 3 12 3z"/></svg>
-            카카오톡 문의
-          </a>
-          {IS_ADMIN && (
-            <div style={{display:"flex",gap:6,alignItems:"center"}}>
-              <span style={{fontSize:10,color:"rgba(240,236,228,.4)",whiteSpace:"nowrap",flexShrink:0}}>링크:</span>
-              <input defaultValue={kakaoUrl||ag.kakao} placeholder="https://open.kakao.com/..."
-                onBlur={async(e)=>{
-                  const val=e.target.value;
-                  setKakaoUrl(val);
-                  await saveToSheet(kakaoKey, val);
-                  if(onDataUpdate) onDataUpdate(kakaoKey, val);
-                }}
-                style={{flex:1,background:"rgba(255,255,255,.07)",border:"1px solid rgba(240,236,228,.2)",borderRadius:10,padding:"6px 10px",fontSize:11,color:"#f0ece4",fontFamily:"inherit",outline:"none"}}/>
-            </div>
-          )}
+          {/* 미디어 박스 — 팀 이름과 같은 폭 자동 적용 */}
+          <div style={{width:"100%"}}>
+            <MediaBox
+              videoUrl={videoUrl}
+              photoUrl={photoUrl}
+              onUpload={async(file)=>{
+                const isVideo = file.type.startsWith("video/");
+                const type    = isVideo ? "video" : "image";
+                const key     = isVideo ? videoKey : photoKey;
+                if(isVideo){ setVidError(""); setVidLoading(true); setVidProg(0); }
+                else        { setImgError(""); setImgLoading(true); setImgProg(0); }
+                try{
+                  const url = await uploadFile(file, type, isVideo?setVidProg:setImgProg);
+                  if(isVideo){ setVideoUrl(url); setPhotoUrl(""); }
+                  else        { setPhotoUrl(url); setVideoUrl(""); }
+                  await saveToSheet(key, url);
+                  await saveToSheet(isVideo?photoKey:videoKey, "");
+                  if(onDataUpdate){ onDataUpdate(key,url); onDataUpdate(isVideo?photoKey:videoKey,""); }
+                }catch(err){
+                  if(isVideo) setVidError(err.message);
+                  else        setImgError(err.message);
+                }finally{
+                  if(isVideo) setVidLoading(false);
+                  else        setImgLoading(false);
+                }
+              }}
+              loading={vidLoading||imgLoading}
+              prog={vidLoading?vidProg:imgProg}
+              error={vidError||imgError}
+            />
+          </div>
+
+          {/* 카카오톡 버튼 — 같은 폭 */}
+          <div style={{width:"100%",display:"flex",flexDirection:"column",gap:8}}>
+            <a href={kakaoUrl||ag.kakao} target="_blank" rel="noopener noreferrer"
+              style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,background:"#FEE500",color:"#0a0a0a",padding:"16px",fontSize:14,fontWeight:900,textDecoration:"none",textTransform:"uppercase",borderRadius:50,letterSpacing:".08em",transition:"opacity .2s",textAlign:"center",boxSizing:"border-box"}}
+              onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
+              onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#0a0a0a"><path d="M12 3C7.03 3 3 6.36 3 10.5c0 2.56 1.48 4.83 3.74 6.26l-.95 3.54 4.1-2.04c.67.1 1.37.16 2.11.16 4.97 0 9-3.36 9-7.5S16.97 3 12 3z"/></svg>
+              카카오톡 문의
+            </a>
+            {IS_ADMIN && (
+              <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                <span style={{fontSize:10,color:"rgba(240,236,228,.4)",whiteSpace:"nowrap",flexShrink:0}}>링크:</span>
+                <input defaultValue={kakaoUrl||ag.kakao} placeholder="https://open.kakao.com/..."
+                  onBlur={async(e)=>{
+                    const val=e.target.value;
+                    setKakaoUrl(val);
+                    await saveToSheet(kakaoKey, val);
+                    if(onDataUpdate) onDataUpdate(kakaoKey, val);
+                  }}
+                  style={{flex:1,background:"rgba(255,255,255,.07)",border:"1px solid rgba(240,236,228,.2)",borderRadius:10,padding:"6px 10px",fontSize:11,color:"#f0ece4",fontFamily:"inherit",outline:"none"}}/>
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
 
