@@ -648,7 +648,7 @@ function MainPage({onAgent, onChat}){
           <div style={{fontFamily:"monospace",fontSize:"clamp(34px,9.5vw,56px)",fontWeight:800,letterSpacing:".04em",lineHeight:1}}>{clock}</div>
         </div>
         <div style={{background:"rgba(240,236,228,.04)",padding:"16px 18px",borderRadius:20,textAlign:"center"}}>
-          <div style={{fontSize:18,fontWeight:800,color:"rgba(240,236,228,.9)",letterSpacing:".18em",textTransform:"uppercase",marginBottom:16,textAlign:"center"}}>사입 진행 방식</div>
+          <div style={{fontSize:"clamp(15px,4vw,20px)",fontWeight:800,color:"rgba(240,236,228,.9)",letterSpacing:".18em",marginBottom:16,textAlign:"center"}}>사입 진행 방식</div>
           <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:0}}>
             {[
               {icon:"📋", label:"사입\n신청"},
@@ -658,10 +658,10 @@ function MainPage({onAgent, onChat}){
             ].map((s,i)=>(
               <div key={i} style={{display:"flex",alignItems:"center"}}>
                 <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-                  <span style={{fontSize:32,lineHeight:1}}>{s.icon}</span>
-                  <span style={{fontSize:13,fontWeight:900,color:"rgba(240,236,228,.85)",textAlign:"center",lineHeight:1.4,whiteSpace:"pre-line"}}>{s.label}</span>
+                  <span style={{fontSize:"clamp(32px,8vw,52px)",lineHeight:1}}>{s.icon}</span>
+                  <span style={{fontSize:"clamp(12px,3vw,16px)",fontWeight:900,color:"rgba(240,236,228,.85)",textAlign:"center",lineHeight:1.4,whiteSpace:"pre-line"}}>{s.label}</span>
                 </div>
-                {i<3&&<span style={{fontSize:14,color:"rgba(240,236,228,.5)",fontWeight:900,margin:"0 4px",paddingBottom:20}}>→</span>}
+                {i<3&&<span style={{fontSize:"clamp(13px,3vw,18px)",color:"rgba(240,236,228,.5)",fontWeight:900,margin:"0 clamp(4px,2vw,10px)",alignSelf:"center"}}>→</span>}
               </div>
             ))}
           </div>
