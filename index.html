@@ -565,6 +565,14 @@ function MainPage({onAgent, onChat}){
   const [modal, setModal] = useState(null);
   const [mIdx,  setMIdx]  = useState(0);
   const [editField, setEditField] = useState(null);
+  const [tiktokLink, setTiktokLink] = useState(()=>{
+    try{ return localStorage.getItem("lod_tiktok_link")||"https://www.tiktok.com/@glggid?is_from_webapp=1&sender_device=pc"; }
+    catch{ return "https://www.tiktok.com/@glggid?is_from_webapp=1&sender_device=pc"; }
+  });
+  const [aiKakaoLink, setAiKakaoLink] = useState(()=>{
+    try{ return localStorage.getItem("lod_ai_kakao_link")||"https://open.kakao.com/"; }
+    catch{ return "https://open.kakao.com/"; }
+  });
   const [sheetLoaded, setSheetLoaded] = useState(false);
 
   /* 시트 로드 */
@@ -706,7 +714,7 @@ function MainPage({onAgent, onChat}){
       {/* 룩북 */}
       <div style={{padding:"52px 20px 0",textAlign:"center"}}>
         <div style={{fontSize:"clamp(44px,11.5vw,80px)",letterSpacing:".3em",color:"rgba(240,236,228,.06)",fontWeight:900,lineHeight:1,marginBottom:-10}}>AI EDITORIAL</div>
-        <h2 style={{fontSize:"clamp(20px,5.5vw,30px)",fontWeight:900,position:"relative",zIndex:1}}>인플루언서 패션 AI 모델 제작</h2>
+        <h2 style={{fontSize:"clamp(26px,7vw,42px)",fontWeight:900,position:"relative",zIndex:1}}>인플루언서 패션 AI 모델 제작</h2>
         <div style={{fontSize:"clamp(13px,3.8vw,18px)",color:"rgba(240,236,228,.5)",letterSpacing:".14em",marginTop:8,fontWeight:800}}>L O D COLLECTION 2026</div>
       </div>
       <div style={{padding:"24px 20px 0",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
@@ -716,7 +724,71 @@ function MainPage({onAgent, onChat}){
         ))}
       </div>
 
-      {/* Footer */}
+      {/* ─ 임팩트 문구 ─ */}
+      <div style={{padding:"32px 20px 0",textAlign:"center"}}>
+        <p style={{fontSize:"clamp(18px,5.5vw,28px)",fontWeight:900,color:"#f0ece4",lineHeight:1.5,wordBreak:"keep-all"}}>
+          이 사진들, 전부 AI로 만들었습니다
+        </p>
+      </div>
+
+      {/* ─ 틱톡 링크 바 ─ */}
+      <div style={{padding:"16px 20px 0"}}>
+        {IS_ADMIN && (
+          <div style={{marginBottom:8,display:"flex",gap:6,alignItems:"center"}}>
+            <span style={{fontSize:10,color:"rgba(240,236,228,.4)",whiteSpace:"nowrap"}}>틱톡 링크:</span>
+            <input defaultValue={tiktokLink} placeholder="https://www.tiktok.com/@..."
+              onBlur={e=>{
+                setTiktokLink(e.target.value);
+                try{localStorage.setItem("lod_tiktok_link",e.target.value);}catch{}
+                saveToSheet("틱톡링크", e.target.value);
+              }}
+              style={{flex:1,background:"rgba(255,255,255,.07)",border:"1px solid rgba(240,236,228,.2)",borderRadius:10,padding:"6px 10px",fontSize:11,color:"#f0ece4",fontFamily:"inherit",outline:"none"}}/>
+          </div>
+        )}
+        <a href={tiktokLink} target="_blank" rel="noopener noreferrer"
+          style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,background:"#000",border:"1px solid rgba(240,236,228,.15)",borderRadius:16,padding:"16px 20px",textDecoration:"none",transition:"opacity .2s"}}
+          onMouseEnter={e=>e.currentTarget.style.opacity=".8"}
+          onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z"/></svg>
+          <div>
+            <div style={{fontSize:15,fontWeight:900,color:"#f0ece4",letterSpacing:".04em"}}>저희 틱톡에서 직접 확인해 보세요</div>
+            <div style={{fontSize:11,color:"rgba(240,236,228,.4)",marginTop:2}}>@glggid · AI 패션 모델 작업물</div>
+          </div>
+          <span style={{fontSize:18,color:"rgba(240,236,228,.4)",marginLeft:"auto"}}>→</span>
+        </a>
+      </div>
+
+      {/* ─ AI 모델 제작 문의 섹션 ─ */}
+      <div style={{padding:"20px 20px 0"}}>
+        <div style={{border:"1px solid rgba(240,236,228,.15)",borderRadius:16,padding:"32px 24px",textAlign:"center",position:"relative",overflow:"hidden"}}>
+          {/* 배경 영문 */}
+          <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:"clamp(50px,13vw,90px)",fontWeight:900,color:"rgba(240,236,228,.04)",letterSpacing:".2em",whiteSpace:"nowrap",pointerEvents:"none",lineHeight:1}}>AI MODEL</div>
+          {/* 내용 */}
+          <div style={{position:"relative",zIndex:1}}>
+            <div style={{fontSize:10,letterSpacing:".4em",color:"rgba(240,236,228,.3)",marginBottom:16}}>L O D · AI FASHION</div>
+            <p style={{fontSize:"clamp(16px,4.5vw,22px)",fontWeight:300,color:"#f0ece4",lineHeight:1.8,margin:"0 0 16px",letterSpacing:".05em"}}>실제 모델 없이<br/>당신의 의상을 완성합니다</p>
+            <div style={{width:40,height:1,background:"rgba(240,236,228,.3)",margin:"0 auto 16px"}}/>
+            <a href={aiKakaoLink} target="_blank" rel="noopener noreferrer"
+              style={{display:"inline-block",background:"#FEE500",color:"#0a0a0a",padding:"14px 32px",borderRadius:50,fontSize:14,fontWeight:900,textDecoration:"none",letterSpacing:".06em",transition:"opacity .2s"}}
+              onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
+              onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+              AI 모델 제작 문의하기
+            </a>
+            {IS_ADMIN && (
+              <div style={{marginTop:10,display:"flex",gap:6,alignItems:"center"}}>
+                <span style={{fontSize:10,color:"rgba(240,236,228,.4)",whiteSpace:"nowrap"}}>AI 문의 링크:</span>
+                <input defaultValue={aiKakaoLink} placeholder="https://open.kakao.com/..."
+                  onBlur={e=>{
+                    setAiKakaoLink(e.target.value);
+                    try{localStorage.setItem("lod_ai_kakao_link",e.target.value);}catch{}
+                    saveToSheet("AI카카오링크", e.target.value);
+                  }}
+                  style={{flex:1,background:"rgba(255,255,255,.07)",border:"1px solid rgba(240,236,228,.2)",borderRadius:10,padding:"6px 10px",fontSize:11,color:"#f0ece4",fontFamily:"inherit",outline:"none"}}/>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
       <footer style={{padding:"52px 20px 40px",textAlign:"center",borderTop:"1px solid rgba(240,236,228,.07)",borderRadius:"22px 22px 0 0",background:"#0d0d0d",marginTop:48}}>
         <svg width="44" height="44" viewBox="0 0 100 100" fill="none" style={{margin:"0 auto",display:"block"}}>
           <circle cx="50" cy="50" r="46" stroke="rgba(240,236,228,.2)" strokeWidth="5" fill="none"/>
