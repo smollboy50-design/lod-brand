@@ -765,22 +765,16 @@ function AgentPage({ag, onBack, allAgents, onAgent, sheetData, onDataUpdate}){
   useEffect(()=>{
     if(!pageReady) return;
     const sync=()=>{
-      if(!teamTitleRef.current) return;
+      if(!teamTitleRef.current||!mediaWrapRef.current||!kakaoWrapRef.current) return;
       const w = teamTitleRef.current.getBoundingClientRect().width;
-      if(w>0){
-        if(mediaWrapRef.current) mediaWrapRef.current.style.width = w+"px";
-        if(kakaoWrapRef.current) kakaoWrapRef.current.style.width = w+"px";
+      if(w>10){
+        mediaWrapRef.current.style.width = w+"px";
+        kakaoWrapRef.current.style.width = w+"px";
       }
     };
-    // 여러 타이밍에 측정해서 확실하게 적용
     sync();
-    setTimeout(sync, 100);
-    setTimeout(sync, 300);
-    setTimeout(sync, 600);
-    document.fonts?.ready.then(()=>{
-      sync();
-      setTimeout(sync, 100);
-    });
+    [100,300,600,1000].forEach(t=>setTimeout(sync,t));
+    document.fonts?.ready.then(()=>{ sync(); setTimeout(sync,200); });
     const ro = new ResizeObserver(sync);
     if(teamTitleRef.current) ro.observe(teamTitleRef.current);
     window.addEventListener("resize", sync);
@@ -884,9 +878,10 @@ function AgentPage({ag, onBack, allAgents, onAgent, sheetData, onDataUpdate}){
         <h2 ref={teamTitleRef} style={{fontSize:"clamp(28px,8vw,44px)",fontWeight:900,lineHeight:1.15,display:"inline-block"}}>{ag.label}</h2>
       </div>
 
-      {/* 미디어 박스 — 팀 이름 폭에 맞춤, 중앙 정렬 */}
-      <div style={{padding:"16px 20px 0",display:"flex",justifyContent:"center"}}>
-        <div ref={mediaWrapRef} style={{width:"50%"}}>
+      {/* 미디어 박스 + 카카오 버튼 — 팀 이름 폭과 동일하게 */}
+      <div style={{padding:"16px 20px 0",display:"flex",flexDirection:"column",alignItems:"center",gap:14}}>
+        {/* 미디어 박스 */}
+        <div ref={mediaWrapRef} style={{width:"fit-content",minWidth:"50%",maxWidth:"calc(100% - 0px)"}}>
           <MediaBox
             videoUrl={videoUrl}
             photoUrl={photoUrl}
@@ -916,11 +911,9 @@ function AgentPage({ag, onBack, allAgents, onAgent, sheetData, onDataUpdate}){
             error={vidError||imgError}
           />
         </div>
-      </div>
 
-      {/* 카카오톡 버튼 — 미디어박스와 동일한 폭 */}
-      <div style={{padding:"14px 20px 0",display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
-        <div ref={kakaoWrapRef} style={{width:"50%",display:"flex",flexDirection:"column",gap:8}}>
+        {/* 카카오톡 버튼 */}
+        <div ref={kakaoWrapRef} style={{width:"fit-content",minWidth:"50%",maxWidth:"calc(100% - 0px)",display:"flex",flexDirection:"column",gap:8}}>
           <a href={kakaoUrl||ag.kakao} target="_blank" rel="noopener noreferrer"
             style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,background:"#FEE500",color:"#0a0a0a",padding:"16px",fontSize:14,fontWeight:900,textDecoration:"none",textTransform:"uppercase",borderRadius:50,letterSpacing:".08em",transition:"opacity .2s",textAlign:"center"}}
             onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
@@ -928,8 +921,6 @@ function AgentPage({ag, onBack, allAgents, onAgent, sheetData, onDataUpdate}){
             <svg width="16" height="16" viewBox="0 0 24 24" fill="#0a0a0a"><path d="M12 3C7.03 3 3 6.36 3 10.5c0 2.56 1.48 4.83 3.74 6.26l-.95 3.54 4.1-2.04c.67.1 1.37.16 2.11.16 4.97 0 9-3.36 9-7.5S16.97 3 12 3z"/></svg>
             카카오톡 문의
           </a>
-
-          {/* 관리자: 카카오 링크 입력 */}
           {IS_ADMIN && (
             <div style={{display:"flex",gap:6,alignItems:"center"}}>
               <span style={{fontSize:10,color:"rgba(240,236,228,.4)",whiteSpace:"nowrap",flexShrink:0}}>링크:</span>
