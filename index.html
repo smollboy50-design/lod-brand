@@ -763,6 +763,7 @@ function AgentPage({ag, onBack, allAgents, onAgent, sheetData, onDataUpdate}){
 
   // 팀 이름 폭 → 미디어박스 + 카카오버튼 동기화
   useEffect(()=>{
+    if(!pageReady) return; // pageReady 후에만 실행
     const sync=()=>{
       if(!teamTitleRef.current) return;
       const w = teamTitleRef.current.getBoundingClientRect().width;
@@ -771,13 +772,14 @@ function AgentPage({ag, onBack, allAgents, onAgent, sheetData, onDataUpdate}){
         if(kakaoWrapRef.current) kakaoWrapRef.current.style.width = w+"px";
       }
     };
-    sync();
+    // 렌더 완료 후 약간 지연해서 측정
+    setTimeout(sync, 50);
     const ro = new ResizeObserver(sync);
     if(teamTitleRef.current) ro.observe(teamTitleRef.current);
     window.addEventListener("resize", sync);
     document.fonts?.ready.then(sync);
     return()=>{ ro.disconnect(); window.removeEventListener("resize",sync); };
-  },[ag.id]);
+  },[pageReady, ag.id]);
 
   // 팀별 데이터 키
   const prefix   = ag.id==="SN" ? "강북팀" : "인천팀";
@@ -1108,4 +1110,3 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
 </html>
-
