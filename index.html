@@ -770,25 +770,12 @@ function MainPage({onAgent, onChat}){
 
       {/* 룩북 */}
       <div style={{padding:"52px 20px 0",textAlign:"center"}}>
-        <div style={{fontSize:"clamp(44px,11.5vw,80px)",letterSpacing:".3em",color:"rgba(240,236,228,.06)",fontWeight:900,lineHeight:1,marginBottom:-10}}>AI EDITORIAL</div>
-        <h2 style={{fontSize:"clamp(26px,7vw,42px)",fontWeight:900,position:"relative",zIndex:1}}>인플루언서 패션 AI 모델 제작</h2>
-        <div style={{fontSize:"clamp(13px,3.8vw,18px)",color:"rgba(240,236,228,.5)",letterSpacing:".14em",marginTop:8,fontWeight:800}}>L O D COLLECTION 2026</div>
+        <div style={{fontSize:"clamp(54px,14vw,90px)",letterSpacing:".3em",color:"rgba(240,236,228,.06)",fontWeight:900,lineHeight:1,marginBottom:-10}}>AI EDITORIAL</div>
+        <h2 style={{fontSize:"clamp(32px,8.5vw,52px)",fontWeight:900,position:"relative",zIndex:1}}>인플루언서 패션 AI 모델 제작</h2>
+        <div style={{fontSize:"clamp(16px,4.5vw,22px)",color:"rgba(240,236,228,.5)",letterSpacing:".14em",marginTop:8,fontWeight:800}}>L O D COLLECTION 2026</div>
       </div>
       <div style={{padding:"24px 20px 0",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-        {looks.map(l=>(
-          <LookCard key={l.id} look={l} onClick={openModal}
-            onImageSaved={(id,url)=>setLooks(ls=>ls.map(x=>x.id===id?{...x,url}:x))}/>
-        ))}
-      </div>
-
-      {/* ─ 임팩트 문구 ─ */}
-      <div style={{padding:"32px 20px 0",textAlign:"center"}}>
-        <p style={{fontSize:"clamp(26px,7.5vw,48px)",fontWeight:900,color:"#f0ece4",lineHeight:1.3,wordBreak:"keep-all"}}>
-          이 사진들,<br/>전부 AI로 만들었습니다
-        </p>
-      </div>
-
-      {/* ─ 틱톡 링크 바 ─ */}
+      {/* ─ 틱톡 링크 바 — 사진 위로 이동 ─ */}
       <div style={{padding:"16px 20px 0"}}>
         {IS_ADMIN && (
           <div style={{marginBottom:8,display:"flex",gap:6,alignItems:"center"}}>
@@ -809,12 +796,27 @@ function MainPage({onAgent, onChat}){
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="#0a0a0a"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z"/></svg>
             <div>
-              <div style={{fontSize:16,fontWeight:900,color:"#0a0a0a",letterSpacing:".04em"}}>저희 틱톡에서 직접 확인해 보세요</div>
-              <div style={{fontSize:12,color:"rgba(0,0,0,.5)",marginTop:2}}>@glggid · AI 패션 모델 작업물</div>
+              <div style={{fontSize:"clamp(16px,4.5vw,22px)",fontWeight:900,color:"#0a0a0a",letterSpacing:".04em"}}>저희 틱톡에서 직접 확인해 보세요</div>
+              <div style={{fontSize:"clamp(12px,3.5vw,16px)",color:"rgba(0,0,0,.5)",marginTop:2}}>@glggid · AI 패션 모델 작업물</div>
             </div>
           </div>
           <span style={{fontSize:20,color:"#0a0a0a",fontWeight:900}}>→</span>
         </a>
+      </div>
+
+      {/* 사진 4장 */}
+      <div style={{padding:"16px 20px 0",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        {looks.map(l=>(
+          <LookCard key={l.id} look={l} onClick={openModal}
+            onImageSaved={(id,url)=>setLooks(ls=>ls.map(x=>x.id===id?{...x,url}:x))}/>
+        ))}
+      </div>
+
+      {/* ─ 임팩트 문구 ─ */}
+      <div style={{padding:"32px 20px 0",textAlign:"center"}}>
+        <p style={{fontSize:"clamp(26px,7.5vw,48px)",fontWeight:900,color:"#f0ece4",lineHeight:1.3,wordBreak:"keep-all"}}>
+          이 사진들,<br/>전부 AI로 만들었습니다
+        </p>
       </div>
 
       {/* ─ AI 모델 제작 문의 섹션 ─ */}
@@ -822,8 +824,8 @@ function MainPage({onAgent, onChat}){
         <div style={{border:"1px solid rgba(240,236,228,.15)",borderRadius:16,padding:"32px 24px",textAlign:"center",position:"relative",overflow:"hidden"}}>
           <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:"clamp(50px,13vw,90px)",fontWeight:900,color:"rgba(240,236,228,.04)",letterSpacing:".2em",whiteSpace:"nowrap",pointerEvents:"none",lineHeight:1}}>AI MODEL</div>
           <div style={{position:"relative",zIndex:1}}>
-            <div style={{fontSize:10,letterSpacing:".4em",color:"rgba(240,236,228,.3)",marginBottom:16}}>L O D · AI FASHION</div>
-            <p style={{fontSize:"clamp(16px,4.5vw,22px)",fontWeight:300,color:"#f0ece4",lineHeight:1.8,margin:"0 0 16px",letterSpacing:".05em"}}>실제 모델 없이<br/>당신의 의상을 완성합니다</p>
+            <div style={{fontSize:11,letterSpacing:".4em",color:"rgba(240,236,228,.3)",marginBottom:16}}>L O D · AI FASHION</div>
+            <p style={{fontSize:"clamp(22px,6vw,34px)",fontWeight:300,color:"#f0ece4",lineHeight:1.8,margin:"0 0 16px",letterSpacing:".05em"}}>실제 모델 없이<br/>당신의 의상을 완성합니다</p>
             <div style={{width:40,height:1,background:"rgba(240,236,228,.3)",margin:"0 auto 16px"}}/>
             <a href={aiKakaoLink} target="_blank" rel="noopener noreferrer"
               style={{display:"inline-block",background:"#f0ece4",color:"#0a0a0a",padding:"14px 32px",borderRadius:50,fontSize:14,fontWeight:900,textDecoration:"none",letterSpacing:".06em",transition:"opacity .2s"}}
@@ -1250,3 +1252,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
 </html>
+
+
