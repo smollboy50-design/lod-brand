@@ -674,21 +674,6 @@ function MainPage({onAgent, onChat}){
         )}
       </div>
 
-        {/* 관리자: 상담 링크 입력 */}
-        {IS_ADMIN && (
-          <div style={{display:"flex",gap:6,alignItems:"center"}}>
-            <span style={{fontSize:10,color:"rgba(240,236,228,.4)",whiteSpace:"nowrap"}}>상담 링크:</span>
-            <input defaultValue={consultLink} placeholder="https://open.kakao.com/..."
-              onBlur={e=>{
-                setConsultLink(e.target.value);
-                try{localStorage.setItem("lod_consult_link",e.target.value);}catch{}
-                saveToSheet("상담링크", e.target.value);
-              }}
-              style={{flex:1,background:"rgba(255,255,255,.07)",border:"1px solid rgba(240,236,228,.2)",borderRadius:10,padding:"6px 10px",fontSize:11,color:"#f0ece4",fontFamily:"inherit",outline:"none"}}/>
-          </div>
-        )}
-      </div>
-
       {/* 시계 + 스텝 */}
       <div style={{margin:"20px 20px 0",borderTop:"2px solid rgba(240,236,228,.18)",borderBottom:"2px solid rgba(240,236,228,.18)",padding:"22px 0"}}>
         <div style={{textAlign:"center",marginBottom:18}}>
