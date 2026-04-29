@@ -80,7 +80,7 @@ const {useState,useEffect,useRef,useCallback} = React;
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const CLOUDINARY_CLOUD  = "ddjdyn0yj";
 const CLOUDINARY_PRESET = "lod_unsigned";
-const APPS_SCRIPT_URL   = "https://script.google.com/macros/s/AKfycbziQ2M5B33SVIRi19e3o9CDKMjhZ0YzDnouiu3Ye02bUaTAQoJ2o1mapPtAsbYWZyBp/exec";
+const APPS_SCRIPT_URL   = "https://script.google.com/macros/s/AKfycbwtVcrYr-6Gth2v2OxM5XRYuIRDzHoycjXLfoMZ23AyRmcwtuFYK5YUvPzdXXUifa4G/exec";
 const MAIN_KAKAO        = "https://yongsaib.sosolution.net/login";
 const IS_ADMIN          = new URLSearchParams(location.search).get("admin") === "true";
 
@@ -508,11 +508,41 @@ function Chat({open,onClose}){
     const nm=[...msgs,{role:"user",content:t}];
     setMsgs(nm); setInput(""); setLoading(true);
     try{
-      const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYS,messages:nm.map(m=>({role:m.role,content:m.content}))})});
-      const d=await r.json();
-      setMsgs(p=>[...p,{role:"assistant",content:d.content?.[0]?.text||"죄송합니다, 잠시 후 다시 시도해 주세요."}]);
-    }catch{ setMsgs(p=>[...p,{role:"assistant",content:"연결에 문제가 생겼어요."}]); }
+      // Gemini via Apps Script (JSONP)
+      const reply = await new Promise((resolve, reject)=>{
+        const cbName = "chatCb_" + Date.now();
+        const s = document.createElement("script");
+        const params = new URLSearchParams({
+          callback: cbName,
+          action: "chat",
+          message: t,
+          t: Date.now()
+        });
+        s.src = APPS_SCRIPT_URL + "?" + params.toString();
+        window[cbName] = (res)=>{
+          delete window[cbName];
+          if(document.body.contains(s)) document.body.removeChild(s);
+          if(res.status==="ok") resolve(res.reply);
+          else reject(new Error(res.reply||"오류"));
+        };
+        s.onerror = ()=>{
+          delete window[cbName];
+          if(document.body.contains(s)) document.body.removeChild(s);
+          reject(new Error("연결 오류"));
+        };
+        setTimeout(()=>{
+          if(window[cbName]){
+            delete window[cbName];
+            if(document.body.contains(s)) document.body.removeChild(s);
+            reject(new Error("시간 초과"));
+          }
+        }, 15000);
+        document.body.appendChild(s);
+      });
+      setMsgs(p=>[...p,{role:"assistant",content:reply}]);
+    }catch(e){
+      setMsgs(p=>[...p,{role:"assistant",content:"죄송합니다. 잠시 후 다시 시도해 주세요."}]);
+    }
     setLoading(false);
   };
   const onKey=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}};
