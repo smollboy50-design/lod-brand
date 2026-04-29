@@ -573,6 +573,18 @@ function MainPage({onAgent, onChat}){
     try{ return localStorage.getItem("lod_ai_kakao_link")||"https://open.kakao.com/"; }
     catch{ return "https://open.kakao.com/"; }
   });
+  const [consultLink, setConsultLink] = useState(()=>{
+    try{ return localStorage.getItem("lod_consult_link")||""; }
+    catch{ return ""; }
+  });
+  const [consultLink, setConsultLink] = useState(()=>{
+    try{ return localStorage.getItem("lod_consult_link")||""; }
+    catch{ return ""; }
+  });
+  const [consultLink, setConsultLink] = useState(()=>{
+    try{ return localStorage.getItem("lod_consult_link")||""; }
+    catch{ return ""; }
+  });
   const [sheetLoaded, setSheetLoaded] = useState(false);
 
   /* 시트 로드 */
@@ -640,13 +652,49 @@ function MainPage({onAgent, onChat}){
         </div>
       )}
 
-      {/* AI 챗 버튼 */}
-      <div style={{padding:"20px 16px 0",display:"flex",justifyContent:"center"}}>
+      {/* AI 챗 버튼 + 삼촌 상담 버튼 */}
+      <div style={{padding:"20px 16px 0",display:"flex",flexDirection:"column",gap:10}}>
         <button onClick={onChat} className="chat-pulse"
           style={{width:"100%",padding:"20px 14px",background:"#fff",color:"#0a0a0a",border:"none",borderRadius:22,cursor:"pointer",textAlign:"center",fontFamily:"inherit",fontWeight:900,fontSize:"clamp(16px,4.5vw,22px)",lineHeight:1.5,transition:"transform .2s"}}>
           💬 사입에 대해 무엇이든 물어보세요<br/>
           <span style={{display:"block",textAlign:"center",marginTop:4,fontSize:".9em"}}>24시 AI 챗!!</span>
         </button>
+
+        {/* 삼촌 실시간 상담 */}
+        <a href={consultLink||"#"} target="_blank" rel="noopener noreferrer"
+          style={{width:"100%",padding:"20px 14px",background:"#fff",color:"#0a0a0a",borderRadius:22,cursor:"pointer",textAlign:"center",fontFamily:"inherit",fontWeight:900,fontSize:"clamp(16px,4.5vw,22px)",lineHeight:1.5,textDecoration:"none",display:"block",boxSizing:"border-box"}}>
+          👨‍💼 사입 삼촌 실시간 상담<br/>
+          <span style={{display:"block",textAlign:"center",marginTop:4,fontSize:".75em",fontWeight:700,color:"rgba(0,0,0,.55)"}}>PM 19:00 ~ AM 11:00 상담 가능</span>
+        </a>
+
+        {/* 관리자: 상담 링크 입력 */}
+        {IS_ADMIN && (
+          <div style={{display:"flex",gap:6,alignItems:"center",padding:"0 4px"}}>
+            <span style={{fontSize:10,color:"rgba(240,236,228,.4)",whiteSpace:"nowrap"}}>상담 링크:</span>
+            <input defaultValue={consultLink} placeholder="https://open.kakao.com/..."
+              onBlur={e=>{
+                setConsultLink(e.target.value);
+                try{localStorage.setItem("lod_consult_link",e.target.value);}catch{}
+                saveToSheet("상담링크", e.target.value);
+              }}
+              style={{flex:1,background:"rgba(255,255,255,.07)",border:"1px solid rgba(240,236,228,.2)",borderRadius:10,padding:"6px 10px",fontSize:11,color:"#f0ece4",fontFamily:"inherit",outline:"none"}}/>
+          </div>
+        )}
+      </div>
+
+        {/* 관리자: 상담 링크 입력 */}
+        {IS_ADMIN && (
+          <div style={{display:"flex",gap:6,alignItems:"center"}}>
+            <span style={{fontSize:10,color:"rgba(240,236,228,.4)",whiteSpace:"nowrap"}}>상담 링크:</span>
+            <input defaultValue={consultLink} placeholder="https://open.kakao.com/..."
+              onBlur={e=>{
+                setConsultLink(e.target.value);
+                try{localStorage.setItem("lod_consult_link",e.target.value);}catch{}
+                saveToSheet("상담링크", e.target.value);
+              }}
+              style={{flex:1,background:"rgba(255,255,255,.07)",border:"1px solid rgba(240,236,228,.2)",borderRadius:10,padding:"6px 10px",fontSize:11,color:"#f0ece4",fontFamily:"inherit",outline:"none"}}/>
+          </div>
+        )}
       </div>
 
       {/* 시계 + 스텝 */}
