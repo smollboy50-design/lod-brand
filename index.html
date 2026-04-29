@@ -1170,8 +1170,20 @@ function App(){
     {id:"IB",label:data["인천팀 이름"],kakao:data["인천팀 카카오"],deadline:data["인천팀 마감"],intro:data["인천팀 소개"],regionEn:"INCHEON · BUCHEON"},
   ];
 
-  const goAgent = a=>{ setAg(a); setPage("agent"); window.scrollTo({top:0}); };
+  const goAgent = a=>{ 
+    setAg(a); 
+    setPage("agent"); 
+    window.scrollTo({top:0});
+    window.history.pushState({page:"agent"}, "");
+  };
   const goMain  = ()=>{ setPage("main"); setAg(null); };
+
+  // 브라우저 뒤로가기 버튼 처리
+  useEffect(()=>{
+    const handlePop = ()=>{ goMain(); };
+    window.addEventListener("popstate", handlePop);
+    return()=>window.removeEventListener("popstate", handlePop);
+  },[]);
 
   return(
     <div className="shell">
@@ -1251,3 +1263,4 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
 </html>
+
