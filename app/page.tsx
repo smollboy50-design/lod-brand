@@ -33,7 +33,7 @@ function saveToSheet(key:string,value:string){
   return new Promise(resolve=>{
     const name="save_"+Date.now();
     const s=document.createElement("script");
-    const p=new URLSearchParams({callback:name,action:"update",key,value,t:Date.now()});
+    const p=new URLSearchParams({callback:name,action:"update",key,value,t:String(Date.now())});
     s.src=APPS_SCRIPT_URL+"?"+p.toString();
     window[name]=(res)=>{delete window[name];if(document.body.contains(s))document.body.removeChild(s);resolve(res);};
     s.onerror=()=>{delete window[name];if(document.body.contains(s))document.body.removeChild(s);resolve(null);};
