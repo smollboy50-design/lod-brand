@@ -29,7 +29,7 @@ const DEFAULTS = {
   "상담 링크":"",
 };
 
-function saveToSheet(key,value){
+function saveToSheet(key:string,value:string){
   return new Promise(resolve=>{
     const name="save_"+Date.now();
     const s=document.createElement("script");
