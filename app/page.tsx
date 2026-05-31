@@ -1353,6 +1353,7 @@ function App(){
 
   return(
     <div className="shell">
+      <style>{`@media (max-width:768px){.region-btn-grid{grid-template-columns:1fr !important;}.region-btn-grid button{border-radius:50px !important;}}`}</style>
       <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0}}>
         {[...Array(16)].map((_,i)=>(
           <div key={i} style={{position:"absolute",width:3,height:3,borderRadius:"50%",background:"rgba(204,255,0,.4)",left:`${5+i*6}%`,top:`${50+((i*41)%50)}%`,animation:`float ${5+i%4}s linear ${i*.6}s infinite`}}/>
@@ -1531,7 +1532,7 @@ function App(){
             <div style={{fontSize:"clamp(18px,2vw,24px)",fontWeight:700,color:"#CCFF00",marginBottom:8}}>해당하는 지역을 선택해 주세요</div>
             <div style={{fontSize:"clamp(18px,2vw,24px)",fontWeight:700,color:"#f0ece4",animation:"textGlow 2.5s ease-in-out infinite"}}>지역이 없을 경우 상단 사입 삼촌 실시간 상담으로 문의해 주세요</div>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+          <div className="region-btn-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
             {/* 1행 1열: 강북 */}
             <button onClick={()=>goAgent(agents.find(a=>a.id==="SN"))} className="shimmer-border"
               style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,border:"none",borderRadius:20,cursor:"pointer",fontFamily:"inherit",padding:"24px 28px",background:"rgba(204,255,0,.08)",transition:"all .2s"}}
