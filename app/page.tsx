@@ -24,6 +24,11 @@ const DEFAULTS = {
   "안양팀 카카오":"",
   "안양팀_영상URL":"",
   "안양팀_사진URL":"",
+  "일산팀 이름":"일산·파주·고양",
+  "일산팀 소개":"일산·파주·고양 지역 사입 전문 팀입니다.\n정확한 픽업과 꼼꼼한 검수로 사장님의 든든한 파트너가 되겠습니다.",
+  "일산팀 카카오":"",
+  "일산팀_영상URL":"",
+  "일산팀_사진URL":"",
   "룩북1_URL":"","룩북2_URL":"","룩북3_URL":"","룩북4_URL":"",
   "사입 프로그램":"https://yongsaib.sosolution.net/login",
   "상담 링크":"",
@@ -213,10 +218,10 @@ function EditModal({label,value,onSave,onClose}){
 
 function AgentPage({ag,onBack,allAgents,onAgent,data,onUpdate,saipLink}){
   const [editField,setEditField]=useState(null);
-  const introKey=ag.id==="SN"?"강북팀 소개":ag.id==="AY"?"안양팀 소개":"인천팀 소개";
-  const kakaoKey=ag.id==="SN"?"강북팀 카카오":ag.id==="AY"?"안양팀 카카오":"인천팀 카카오";
-  const videoKey=ag.id==="SN"?"강북팀_영상URL":ag.id==="AY"?"안양팀_영상URL":"인천팀_영상URL";
-  const photoKey=ag.id==="SN"?"강북팀_사진URL":ag.id==="AY"?"안양팀_사진URL":"인천팀_사진URL";
+  const introKey=ag.id==="SN"?"강북팀 소개":ag.id==="AY"?"안양팀 소개":ag.id==="IS"?"일산팀 소개":"인천팀 소개";
+  const kakaoKey=ag.id==="SN"?"강북팀 카카오":ag.id==="AY"?"안양팀 카카오":ag.id==="IS"?"일산팀 카카오":"인천팀 카카오";
+  const videoKey=ag.id==="SN"?"강북팀_영상URL":ag.id==="AY"?"안양팀_영상URL":ag.id==="IS"?"일산팀_영상URL":"인천팀_영상URL";
+  const photoKey=ag.id==="SN"?"강북팀_사진URL":ag.id==="AY"?"안양팀_사진URL":ag.id==="IS"?"일산팀_사진URL":"인천팀_사진URL";
   const intro=data[introKey]||ag.intro||"";
   const kakao=data[kakaoKey]||ag.kakao||"";
   const [videoUrl,setVideoUrl]=useState(data[videoKey]||"");
@@ -269,8 +274,8 @@ function AgentPage({ag,onBack,allAgents,onAgent,data,onUpdate,saipLink}){
         <div style={{textAlign:"center",marginBottom:32}}>
           <div style={{fontSize:11,letterSpacing:".4em",color:"rgba(240,236,228,.3)",marginBottom:12,textTransform:"uppercase",fontSize:"clamp(13px,1.5vw,17px)"}}>{ag.regionEn}</div>
           <h2 style={{fontSize:"clamp(32px,5vw,52px)",fontWeight:900,color:"#f0ece4",cursor:IS_ADMIN?"pointer":"default"}}
-            onClick={()=>IS_ADMIN&&setEditField({key:ag.id==="SN"?"강북팀 이름":ag.id==="AY"?"안양팀 이름":"인천팀 이름",label:"팀 이름",value:data[ag.id==="SN"?"강북팀 이름":ag.id==="AY"?"안양팀 이름":"인천팀 이름"]||ag.label})}>
-            {data[ag.id==="SN"?"강북팀 이름":ag.id==="AY"?"안양팀 이름":"인천팀 이름"]||ag.label}
+            onClick={()=>IS_ADMIN&&setEditField({key:ag.id==="SN"?"강북팀 이름":ag.id==="AY"?"안양팀 이름":ag.id==="IS"?"일산팀 이름":"인천팀 이름",label:"팀 이름",value:data[ag.id==="SN"?"강북팀 이름":ag.id==="AY"?"안양팀 이름":ag.id==="IS"?"일산팀 이름":"인천팀 이름"]||ag.label})}>
+            {data[ag.id==="SN"?"강북팀 이름":ag.id==="AY"?"안양팀 이름":ag.id==="IS"?"일산팀 이름":"인천팀 이름"]||ag.label}
           </h2>
         </div>
 
@@ -321,7 +326,7 @@ function AgentPage({ag,onBack,allAgents,onAgent,data,onUpdate,saipLink}){
               카카오톡 문의하기
             </a>
 
-            {ag.id!=="AY"&&<a href={saipLink} target="_blank" rel="noopener noreferrer"
+            {ag.id!=="AY"&&ag.id!=="IS"&&<a href={saipLink} target="_blank" rel="noopener noreferrer"
               style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,background:"#f0ece4",border:"none",borderRadius:50,padding:"16px 32px",fontSize:16,fontWeight:900,color:"#0a0a0a",textDecoration:"none",transition:"all .2s",boxSizing:"border-box"}}
               onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
               onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
@@ -343,7 +348,7 @@ function AgentPage({ag,onBack,allAgents,onAgent,data,onUpdate,saipLink}){
           {allAgents.filter(a=>a.id!==ag.id).map(other=>(
             <button key={other.id} onClick={()=>onAgent(other)} className="rbtn shimmer-border" style={{marginBottom:10}}>
               <div style={{fontSize:"clamp(18px,2.5vw,26px)",fontWeight:900,color:"#CCFF00",flex:1,textAlign:"center"}}>
-                {data[other.id==="SN"?"강북팀 이름":other.id==="AY"?"안양팀 이름":"인천팀 이름"]||other.label}
+                {data[other.id==="SN"?"강북팀 이름":other.id==="AY"?"안양팀 이름":other.id==="IS"?"일산팀 이름":"인천팀 이름"]||other.label}
               </div>
               <span style={{fontSize:24,color:"#CCFF00",fontWeight:900}}>→</span>
             </button>
@@ -1295,6 +1300,7 @@ function App(){
     {id:"SN",label:data["강북팀 이름"],kakao:data["강북팀 카카오"],intro:data["강북팀 소개"],regionEn:"SEOUL NORTH AREA"},
     {id:"AY",label:data["안양팀 이름"],kakao:data["안양팀 카카오"],intro:data["안양팀 소개"],regionEn:"ANYANG · GWACHEON"},
     {id:"IB",label:data["인천팀 이름"],kakao:data["인천팀 카카오"],intro:data["인천팀 소개"],regionEn:"INCHEON · BUCHEON"},
+    {id:"IS",label:data["일산팀 이름"],kakao:data["일산팀 카카오"],intro:data["일산팀 소개"],regionEn:"ILSAN · PAJU · GOYANG"},
   ];
 
   if(page==="faq"){
@@ -1532,7 +1538,7 @@ function App(){
                 onMouseEnter={e=>e.currentTarget.style.background="rgba(204,255,0,.15)"}
                 onMouseLeave={e=>e.currentTarget.style.background="rgba(204,255,0,.08)"}>
                 <div style={{fontSize:"clamp(16px,2vw,24px)",fontWeight:900,color:"#CCFF00",textAlign:"center",whiteSpace:"nowrap"}}>
-                  {data[ag.id==="SN"?"강북팀 이름":ag.id==="AY"?"안양팀 이름":"인천팀 이름"]||ag.label}
+                  {data[ag.id==="SN"?"강북팀 이름":ag.id==="AY"?"안양팀 이름":ag.id==="IS"?"일산팀 이름":"인천팀 이름"]||ag.label}
                 </div>
                 <span style={{fontSize:"clamp(16px,2vw,24px)",color:"#CCFF00",fontWeight:900,flexShrink:0}}>▶</span>
               </button>
