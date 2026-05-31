@@ -1531,20 +1531,39 @@ function App(){
             <div style={{fontSize:"clamp(18px,2vw,24px)",fontWeight:700,color:"#CCFF00",marginBottom:8}}>해당하는 지역을 선택해 주세요</div>
             <div style={{fontSize:"clamp(18px,2vw,24px)",fontWeight:700,color:"#f0ece4",animation:"textGlow 2.5s ease-in-out infinite"}}>지역이 없을 경우 상단 사입 삼촌 실시간 상담으로 문의해 주세요</div>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gridTemplateRows:"auto auto",gap:16}} className="region-grid">
-            {agents.map((ag,idx)=>(
-              <button key={ag.id} onClick={()=>goAgent(ag)} className="shimmer-border"
-                style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,width:"100%",border:"none",borderRadius:20,cursor:"pointer",fontFamily:"inherit",padding:"24px 28px",background:"rgba(204,255,0,.08)",transition:"all .2s",gridColumn:ag.id==="IB"?"2":"1",gridRow:ag.id==="SN"?"1":ag.id==="AY"?"2":"1"}}
-                onMouseEnter={e=>e.currentTarget.style.background="rgba(204,255,0,.15)"}
-                onMouseLeave={e=>e.currentTarget.style.background="rgba(204,255,0,.08)"}>
-                <div style={{fontSize:"clamp(16px,2vw,24px)",fontWeight:900,color:"#CCFF00",textAlign:"center",whiteSpace:"nowrap"}}>
-                  {data[ag.id==="SN"?"강북팀 이름":ag.id==="AY"?"안양팀 이름":ag.id==="IS"?"일산팀 이름":"인천팀 이름"]||ag.label}
-                </div>
-                <span style={{fontSize:"clamp(16px,2vw,24px)",color:"#CCFF00",fontWeight:900,flexShrink:0}}>▶</span>
-              </button>
-            ))}
-            {/* 빈 공간 */}
-            <div style={{gridColumn:"2",gridRow:"2"}}/>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+            {/* 1행 1열: 강북 */}
+            <button onClick={()=>goAgent(agents.find(a=>a.id==="SN"))} className="shimmer-border"
+              style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,border:"none",borderRadius:20,cursor:"pointer",fontFamily:"inherit",padding:"24px 28px",background:"rgba(204,255,0,.08)",transition:"all .2s"}}
+              onMouseEnter={e=>e.currentTarget.style.background="rgba(204,255,0,.15)"}
+              onMouseLeave={e=>e.currentTarget.style.background="rgba(204,255,0,.08)"}>
+              <div style={{fontSize:"clamp(16px,2vw,24px)",fontWeight:900,color:"#CCFF00",textAlign:"center"}}>{data["강북팀 이름"]||"강북·도봉·노원·중랑"}</div>
+              <span style={{fontSize:"clamp(16px,2vw,24px)",color:"#CCFF00",fontWeight:900,flexShrink:0}}>▶</span>
+            </button>
+            {/* 1행 2열: 인천 */}
+            <button onClick={()=>goAgent(agents.find(a=>a.id==="IB"))} className="shimmer-border"
+              style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,border:"none",borderRadius:20,cursor:"pointer",fontFamily:"inherit",padding:"24px 28px",background:"rgba(204,255,0,.08)",transition:"all .2s"}}
+              onMouseEnter={e=>e.currentTarget.style.background="rgba(204,255,0,.15)"}
+              onMouseLeave={e=>e.currentTarget.style.background="rgba(204,255,0,.08)"}>
+              <div style={{fontSize:"clamp(16px,2vw,24px)",fontWeight:900,color:"#CCFF00",textAlign:"center"}}>{data["인천팀 이름"]||"인천·부천"}</div>
+              <span style={{fontSize:"clamp(16px,2vw,24px)",color:"#CCFF00",fontWeight:900,flexShrink:0}}>▶</span>
+            </button>
+            {/* 2행 1열: 안양 */}
+            <button onClick={()=>goAgent(agents.find(a=>a.id==="AY"))} className="shimmer-border"
+              style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,border:"none",borderRadius:20,cursor:"pointer",fontFamily:"inherit",padding:"24px 28px",background:"rgba(204,255,0,.08)",transition:"all .2s"}}
+              onMouseEnter={e=>e.currentTarget.style.background="rgba(204,255,0,.15)"}
+              onMouseLeave={e=>e.currentTarget.style.background="rgba(204,255,0,.08)"}>
+              <div style={{fontSize:"clamp(16px,2vw,24px)",fontWeight:900,color:"#CCFF00",textAlign:"center"}}>{data["안양팀 이름"]||"안양·과천·군포·의왕"}</div>
+              <span style={{fontSize:"clamp(16px,2vw,24px)",color:"#CCFF00",fontWeight:900,flexShrink:0}}>▶</span>
+            </button>
+            {/* 2행 2열: 일산 */}
+            <button onClick={()=>goAgent(agents.find(a=>a.id==="IS"))} className="shimmer-border"
+              style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,border:"none",borderRadius:20,cursor:"pointer",fontFamily:"inherit",padding:"24px 28px",background:"rgba(204,255,0,.08)",transition:"all .2s"}}
+              onMouseEnter={e=>e.currentTarget.style.background="rgba(204,255,0,.15)"}
+              onMouseLeave={e=>e.currentTarget.style.background="rgba(204,255,0,.08)"}>
+              <div style={{fontSize:"clamp(16px,2vw,24px)",fontWeight:900,color:"#CCFF00",textAlign:"center"}}>일산</div>
+              <span style={{fontSize:"clamp(16px,2vw,24px)",color:"#CCFF00",fontWeight:900,flexShrink:0}}>▶</span>
+            </button>
           </div>
         </div>
       </div>
